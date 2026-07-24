@@ -458,16 +458,17 @@
             transition: all 0.4s var(--ease-smooth);
         }
 
-        /* COMPLETED 100% TICK BADGES (28px PROMINENT SIZE) */
+        /* PROMINENT 34px COMPLETED TICK BADGE ENGINE */
         .macro-badge.completed-badge {
-            width: 28px !important;
-            height: 28px !important;
+            width: 34px !important;
+            height: 34px !important;
             border-radius: 50% !important;
             padding: 0 !important;
             display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
             flex-shrink: 0;
+            background: transparent !important;
         }
 
         .macro-badge.completed-badge img {
@@ -475,16 +476,18 @@
             height: 100%;
             object-fit: contain;
             display: block;
+            transform: scale(1.15);
         }
 
-        .macro-badge.completed-badge svg {
-            width: 16px;
-            height: 16px;
-            stroke: #ffffff;
-            stroke-width: 3.5;
-            fill: none;
-            stroke-linecap: round;
-            stroke-linejoin: round;
+        /* TINTED TICK MASK FOR FATS & CAROTENOIDS */
+        .macro-badge.completed-badge.tinted-tick-mask {
+            -webkit-mask-size: contain;
+            mask-size: contain;
+            -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+            -webkit-mask-position: center;
+            mask-position: center;
+            transform: scale(1.15);
         }
 
         .progress-track {
@@ -786,8 +789,8 @@
         // ACCEPT TICK IMAGE URL
         const ACCEPT_TICK_URL = "images/tick.png";
 
-        // EXCLUDED FROM GREEN IMAGE TICK (USES MATCHED TRACKING BAR COLOR INSTEAD)
-        const excludedFromImageTick = ['sfa', 'unsat', 'mufa', 'pufa', 'ala', 'epa', 'dha', 'o6', 'bCarotene', 'aCarotene'];
+        // EXCLUDED FROM FULL GREEN IMAGE TICK (USES RECOLORED TINTED TICK MASK MATCHING TRACKING BAR COLOR)
+        const excludedFromGreenImageTick = ['sfa', 'unsat', 'mufa', 'pufa', 'ala', 'epa', 'dha', 'o6', 'bCarotene', 'aCarotene'];
 
         // MASTER 23 FOOD DATABASE
         const foodMasterDB = {
@@ -1152,7 +1155,7 @@
 
             if (!valEl || !barEl || !badgeEl) return;
 
-            const isExcludedCapsule = excludedFromImageTick.includes(id);
+            const isExcludedFromGreenImage = excludedFromGreenImageTick.includes(id);
 
             // SPECIAL ALPHA-CAROTENE N/A HANDLING
             if (isAlphaCarotene) {
@@ -1161,10 +1164,11 @@
                 if (val > 0) {
                     barEl.style.width = '100%';
                     barEl.style.backgroundColor = '#34a853';
-                    badgeEl.className = 'macro-badge completed-badge';
+                    badgeEl.className = 'macro-badge completed-badge tinted-tick-mask';
                     badgeEl.style.backgroundColor = '#34a853';
-                    badgeEl.style.color = '#ffffff';
-                    badgeEl.innerHTML = `<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+                    badgeEl.style.webkitMaskImage = `url('${ACCEPT_TICK_URL}')`;
+                    badgeEl.style.maskImage = `url('${ACCEPT_TICK_URL}')`;
+                    badgeEl.innerHTML = '';
                 } else {
                     barEl.style.width = '0%';
                     barEl.style.backgroundColor = '#34a853';
@@ -1172,6 +1176,8 @@
                     badgeEl.style.backgroundColor = hexToRgba('#34a853', 0.15);
                     badgeEl.style.color = '#34a853';
                     badgeEl.style.padding = '2px 8px';
+                    badgeEl.style.webkitMaskImage = 'none';
+                    badgeEl.style.maskImage = 'none';
                     badgeEl.innerText = '0%';
                 }
                 return;
@@ -1186,16 +1192,20 @@
 
             if (pct >= 100) {
                 barEl.style.width = '100%';
-                badgeEl.className = 'macro-badge completed-badge';
-                if (isExcludedCapsule) {
-                    // Fats & Carotenoids: use tick badge matching their specific tracking bar color
+                if (isExcludedFromGreenImage) {
+                    // Fats & Carotenoids: Use tick.png tinted to their specific tracking bar color
+                    badgeEl.className = 'macro-badge completed-badge tinted-tick-mask';
                     badgeEl.style.backgroundColor = barColor;
-                    badgeEl.style.color = '#ffffff';
-                    badgeEl.innerHTML = `<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+                    badgeEl.style.webkitMaskImage = `url('${ACCEPT_TICK_URL}')`;
+                    badgeEl.style.maskImage = `url('${ACCEPT_TICK_URL}')`;
+                    badgeEl.innerHTML = '';
                 } else {
-                    // All other capsules: use green 3D image tick
+                    // All other capsules: Use full original green 3D image tick
+                    badgeEl.className = 'macro-badge completed-badge';
                     badgeEl.style.backgroundColor = 'transparent';
-                    badgeEl.innerHTML = `<img src="${ACCEPT_TICK_URL}" width="28" height="28" alt="Complete">`;
+                    badgeEl.style.webkitMaskImage = 'none';
+                    badgeEl.style.maskImage = 'none';
+                    badgeEl.innerHTML = `<img src="${ACCEPT_TICK_URL}" alt="Complete">`;
                 }
             } else {
                 barEl.style.width = `${pct}%`;
@@ -1203,6 +1213,8 @@
                 badgeEl.style.backgroundColor = hexToRgba(barColor, 0.15);
                 badgeEl.style.color = barColor;
                 badgeEl.style.padding = '2px 8px';
+                badgeEl.style.webkitMaskImage = 'none';
+                badgeEl.style.maskImage = 'none';
                 badgeEl.innerText = `${pct}%`;
             }
         }
