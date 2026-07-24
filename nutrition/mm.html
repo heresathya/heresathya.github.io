@@ -102,7 +102,6 @@
             width: 95%;
             -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
-            /* SMOOTH DARK/LIGHT MODE COLOR TRANSITION ENGINE */
             transition: background-color 0.8s var(--ease-smooth), color 0.8s var(--ease-smooth);
         }
 
@@ -130,7 +129,7 @@
         .wide-capsule:nth-of-type(7) { animation-delay: 0.40s; }
         footer { animation-delay: 0.48s; }
 
-        /* HEADER DESIGN WITH SMOOTH PALETTE TRANSITION */
+        /* HEADER DESIGN */
         header {
             position: relative;
             background-color: var(--header-bg);
@@ -259,7 +258,7 @@
         .breadcrumbs .separator { color: var(--panel-border); font-weight: 400; user-select: none; transition: color 0.8s var(--ease-smooth); }
         .breadcrumbs .current { color: var(--text-main); opacity: 0.9; transition: color 0.8s var(--ease-smooth); }
 
-        /* DAY SWITCHER CAPSULE WITH SMOOTH SLIDING UNDERLINE */
+        /* DAY SWITCHER CAPSULE WITH MOBILE SCROLL FIX */
         .day-switcher-capsule {
             background-color: var(--panel-bg);
             border: 1px solid var(--panel-border);
@@ -271,7 +270,14 @@
             margin-bottom: 32px;
             width: 100%;
             position: relative;
+            overflow-x: auto;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
             transition: background-color 0.8s var(--ease-smooth), border-color 0.8s var(--ease-smooth);
+        }
+
+        .day-switcher-capsule::-webkit-scrollbar {
+            display: none;
         }
 
         .day-pill {
@@ -286,6 +292,7 @@
             transition: color 0.4s var(--ease-smooth);
             position: relative;
             z-index: 2;
+            flex-shrink: 0;
         }
 
         .day-pill:hover { color: var(--text-main); }
@@ -308,7 +315,7 @@
 
         .contents-container { display: flex; flex-direction: column; gap: 32px; margin-bottom: 80px; width: 100%; }
 
-        /* WIDE CAPSULES WITH 0.8s PALETTE TRANSITION */
+        /* WIDE CAPSULES */
         .wide-capsule {
             background-color: var(--panel-bg);
             border: 1px solid var(--panel-border);
@@ -366,18 +373,18 @@
             filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25));
         }
 
-        /* STRICT GRID SYSTEM PREVENTS CARD JUMPING */
-        .food-checklist-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px 32px;
+        /* TASK 1: COLUMN-BASED LAYOUT ENGINE (TOP-TO-BOTTOM FIRST) */
+        .food-checklist-grid, .macros-grid {
+            column-count: 2;
+            column-gap: 32px;
             width: 100%;
         }
 
-        .macros-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px 32px;
+        .food-item-checkbox, .macro-card {
+            break-inside: avoid;
+            page-break-inside: avoid;
+            margin-bottom: 20px;
+            display: block;
             width: 100%;
         }
 
@@ -392,7 +399,6 @@
             cursor: pointer;
             user-select: none;
             transition: background-color 0.8s var(--ease-smooth), border-color 0.8s var(--ease-smooth);
-            width: 100%;
         }
 
         .food-item-checkbox:hover { border-color: var(--panel-border); }
@@ -429,7 +435,6 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
-            width: 100%;
         }
 
         .macro-top-label {
@@ -544,8 +549,9 @@
             will-change: background-position;
         }
 
-        @media (max-width: 900px) {
-            .food-checklist-grid, .macros-grid { grid-template-columns: 1fr; }
+        /* TASK 1 BREAKPOINT: PHONES & IPADS RENDER SINGLE COLUMN */
+        @media (max-width: 1024px) {
+            .food-checklist-grid, .macros-grid { column-count: 1; }
         }
 
         @media (max-width: 700px) {
@@ -554,7 +560,7 @@
             .header-inner-view { padding: 0 20px; }
             .logo { font-size: 22px; }
             .search-core-input { padding: 0 12px; font-size: 15px; }
-            .day-switcher-capsule { overflow-x: auto; padding: 12px; gap: 8px; justify-content: flex-start; }
+            .day-switcher-capsule { padding: 12px; gap: 8px; justify-content: flex-start; }
             .day-pill { padding: 6px 14px; font-size: 14px; }
             .wide-capsule { padding: 32px 24px; border-radius: 24px; }
             .capsule-svg-icon { width: 100%; height: 100%; object-fit: contain; }
@@ -626,11 +632,11 @@
             <div class="day-active-line" id="dayActiveLine"></div>
         </div>
 
-        <!-- TODAY WITH MASTER CHECKBOX ICON -->
+        <!-- TODAY WITH TASK 2 PERFECTLY ALIGNED MASTER CHECKBOX ICON -->
         <div class="wide-capsule">
             <div class="capsule-header-row">
                 <h2 class="capsule-title">
-                    <span class="custom-check-box" id="masterSelectCheckBox" onclick="toggleSelectAll()" style="cursor: pointer; display: inline-flex; margin-right: 8px;" title="Select / Deselect all items">
+                    <span class="custom-check-box" id="masterSelectCheckBox" onclick="toggleSelectAll()" style="cursor: pointer; display: inline-flex; margin-left: 20px; margin-right: 12px;" title="Select / Deselect all items">
                         <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
                     </span>
                     Today <span id="activeDayText" style="color:var(--text-muted); font-size:16px;">(Sunday)</span>
@@ -653,12 +659,12 @@
             </div>
             <div class="macros-grid">
                 <div class="macro-card"><div class="macro-top-label"><span>Calories</span><span class="macro-badge" id="calBadge">0%</span></div><div class="macro-val" id="calVal">0 / 2200 kcal</div><div class="progress-track"><div class="progress-fill" id="calBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Total Fat</span><span class="macro-badge" id="fatBadge">0%</span></div><div class="macro-val" id="fatVal">0 gms / 78 gms</div><div class="progress-track"><div class="progress-fill" id="fatBar"></div></div></div>
                 <div class="macro-card"><div class="macro-top-label"><span>Protein</span><span class="macro-badge" id="proteinBadge">0%</span></div><div class="macro-val" id="proteinVal">0 gms / 100 gms</div><div class="progress-track"><div class="progress-fill" id="proteinBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Sugars</span><span class="macro-badge" id="sugarsBadge">0%</span></div><div class="macro-val" id="sugarsVal">0 gms / < 25 gms</div><div class="progress-track"><div class="progress-fill" id="sugarsBar"></div></div></div>
                 <div class="macro-card"><div class="macro-top-label"><span>Fiber</span><span class="macro-badge" id="fiberBadge">0%</span></div><div class="macro-val" id="fiberVal">0 gms / 40 gms</div><div class="progress-track"><div class="progress-fill" id="fiberBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Sugar (Lactose)</span><span class="macro-badge" id="lactoseBadge">0%</span></div><div class="macro-val" id="lactoseVal">0 gms / < 25 gms</div><div class="progress-track"><div class="progress-fill" id="lactoseBar"></div></div></div>
                 <div class="macro-card"><div class="macro-top-label"><span>Carbohydrates</span><span class="macro-badge" id="carbsBadge">0%</span></div><div class="macro-val" id="carbsVal">0 gms / 300 gms</div><div class="progress-track"><div class="progress-fill" id="carbsBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Total Fat</span><span class="macro-badge" id="fatBadge">0%</span></div><div class="macro-val" id="fatVal">0 gms / 78 gms</div><div class="progress-track"><div class="progress-fill" id="fatBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Sugars</span><span class="macro-badge" id="sugarsBadge">0%</span></div><div class="macro-val" id="sugarsVal">0 gms / < 25 gms</div><div class="progress-track"><div class="progress-fill" id="sugarsBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Sugar (Lactose)</span><span class="macro-badge" id="lactoseBadge">0%</span></div><div class="macro-val" id="lactoseVal">0 gms / < 25 gms</div><div class="progress-track"><div class="progress-fill" id="lactoseBar"></div></div></div>
             </div>
         </div>
 
@@ -674,12 +680,12 @@
             </div>
             <div class="macros-grid">
                 <div class="macro-card"><div class="macro-top-label"><span>Saturated Fat (SFA)</span><span class="macro-badge" id="sfaBadge">0%</span></div><div class="macro-val" id="sfaVal">0 gms / 20 gms</div><div class="progress-track"><div class="progress-fill" id="sfaBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Omega-3 (ALA)</span><span class="macro-badge" id="alaBadge">0%</span></div><div class="macro-val" id="alaVal">0 gms / 1.6 gms</div><div class="progress-track"><div class="progress-fill" id="alaBar"></div></div></div>
                 <div class="macro-card"><div class="macro-top-label"><span>Unsaturated Fat</span><span class="macro-badge" id="unsatBadge">0%</span></div><div class="macro-val" id="unsatVal">0 gms / 50 gms</div><div class="progress-track"><div class="progress-fill" id="unsatBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Omega-3 (EPA)</span><span class="macro-badge" id="epaBadge">0%</span></div><div class="macro-val" id="epaVal">0 gms / 0.25 gms</div><div class="progress-track"><div class="progress-fill" id="epaBar"></div></div></div>
                 <div class="macro-card"><div class="macro-top-label"><span>Monounsaturated (MUFA)</span><span class="macro-badge" id="mufaBadge">0%</span></div><div class="macro-val" id="mufaVal">0 gms / 30 gms</div><div class="progress-track"><div class="progress-fill" id="mufaBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Omega-3 (DHA)</span><span class="macro-badge" id="dhaBadge">0%</span></div><div class="macro-val" id="dhaVal">0 gms / 0.25 gms</div><div class="progress-track"><div class="progress-fill" id="dhaBar"></div></div></div>
                 <div class="macro-card"><div class="macro-top-label"><span>Polyunsaturated (PUFA)</span><span class="macro-badge" id="pufaBadge">0%</span></div><div class="macro-val" id="pufaVal">0 gms / 20 gms</div><div class="progress-track"><div class="progress-fill" id="pufaBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Omega-3 (ALA)</span><span class="macro-badge" id="alaBadge">0%</span></div><div class="macro-val" id="alaVal">0 gms / 1.6 gms</div><div class="progress-track"><div class="progress-fill" id="alaBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Omega-3 (EPA)</span><span class="macro-badge" id="epaBadge">0%</span></div><div class="macro-val" id="epaVal">0 gms / 0.25 gms</div><div class="progress-track"><div class="progress-fill" id="epaBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Omega-3 (DHA)</span><span class="macro-badge" id="dhaBadge">0%</span></div><div class="macro-val" id="dhaVal">0 gms / 0.25 gms</div><div class="progress-track"><div class="progress-fill" id="dhaBar"></div></div></div>
                 <div class="macro-card"><div class="macro-top-label"><span>Omega-6</span><span class="macro-badge" id="o6Badge">0%</span></div><div class="macro-val" id="o6Val">0 gms / 17 gms</div><div class="progress-track"><div class="progress-fill" id="o6Bar"></div></div></div>
             </div>
         </div>
@@ -935,7 +941,7 @@
         const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
         let currentSelectedDay = new Date().getDay();
 
-        // INSTANT & SMOOTH SLIDING UNDERLINE ENGINE
+        // TASK 3: INSTANT & SMOOTH SLIDING UNDERLINE ENGINE WITH SCROLL OFFSET FIX
         function updateDayLine(activePill) {
             const line = document.getElementById('dayActiveLine');
             const capsule = document.getElementById('daySwitcher');
@@ -944,7 +950,8 @@
             const pillRect = activePill.getBoundingClientRect();
             const capsuleRect = capsule.getBoundingClientRect();
 
-            const left = pillRect.left - capsuleRect.left;
+            // Factor in horizontal scrollLeft distance so line reaches Fri & Sat correctly on mobile
+            const left = pillRect.left - capsuleRect.left + capsule.scrollLeft;
             const width = pillRect.width;
 
             line.style.left = `${left}px`;
@@ -986,13 +993,21 @@
             recalculateTotals();
         }
 
-        // BIND INSTANT CLICK TO DAY PILLS
+        // BIND INSTANT CLICK & SCROLL EVENTS TO DAY SWITCHER
         document.querySelectorAll('.day-pill').forEach(pill => {
             pill.addEventListener('click', function() {
                 const dayIdx = parseInt(this.dataset.day);
                 renderDay(dayIdx);
             });
         });
+
+        const daySwitcherEl = document.getElementById('daySwitcher');
+        if (daySwitcherEl) {
+            daySwitcherEl.addEventListener('scroll', () => {
+                const activePill = document.querySelector('.day-pill.active');
+                if (activePill) updateDayLine(activePill);
+            });
+        }
 
         // MASTER CHECKBOX ENGINE
         function toggleSelectAll() {
@@ -1082,30 +1097,30 @@
             // Update master checkbox UI
             updateMasterCheckBoxState();
 
-            // CAPSULE 1
+            // CAPSULE 1 (Macronutrients & energy)
             updateBar('cal', totals.cal, targets.cal, 'kcal');
-            updateBar('fat', totals.fat, targets.fat, 'gms');
             updateBar('protein', totals.pro, targets.pro, 'gms');
-            updateBar('sugars', totals.sug, targets.sug, 'gms', '< ');
             updateBar('fiber', totals.fiber, targets.fiber, 'gms');
-            updateBar('lactose', totals.lac, targets.lac, 'gms', '< ');
             updateBar('carbs', totals.carb, targets.carb, 'gms');
+            updateBar('fat', totals.fat, targets.fat, 'gms');
+            updateBar('sugars', totals.sug, targets.sug, 'gms', '< ');
+            updateBar('lactose', totals.lac, targets.lac, 'gms', '< ');
 
-            // CAPSULE 2
+            // CAPSULE 2 (Fatty acid profile & lipids)
             updateBar('sfa', totals.sfa, targets.sfa, 'gms');
-            updateBar('ala', totals.ala, targets.ala, 'gms');
             updateBar('unsat', totals.unsat, targets.unsat, 'gms');
-            updateBar('epa', totals.epa, targets.epa, 'gms');
             updateBar('mufa', totals.mufa, targets.mufa, 'gms');
-            updateBar('dha', totals.dha, targets.dha, 'gms');
             updateBar('pufa', totals.pufa, targets.pufa, 'gms');
+            updateBar('ala', totals.ala, targets.ala, 'gms');
+            updateBar('epa', totals.epa, targets.epa, 'gms');
+            updateBar('dha', totals.dha, targets.dha, 'gms');
             updateBar('o6', totals.o6, targets.o6, 'gms');
 
-            // CAPSULE 3
+            // CAPSULE 3 (Carotenoids)
             updateBar('bCarotene', totals.bCar, targets.bCar, 'mcg');
             updateBar('aCarotene', totals.aCar, targets.aCar, 'mcg', '', true);
 
-            // CAPSULE 4
+            // CAPSULE 4 (Vitamins)
             updateBar('vitA', totals.vitA, targets.vitA, 'mcg');
             updateBar('vitB1', totals.vitB1, targets.vitB1, 'mg');
             updateBar('vitB2', totals.vitB2, targets.vitB2, 'mg');
@@ -1120,7 +1135,7 @@
             updateBar('vitE', totals.vitE, targets.vitE, 'mg');
             updateBar('vitK', totals.vitK, targets.vitK, 'mcg');
 
-            // CAPSULE 5
+            // CAPSULE 5 (Macro minerals)
             updateBar('calcium', totals.ca, targets.ca, 'mg');
             updateBar('p', totals.p, targets.p, 'mg');
             updateBar('mg', totals.mg, targets.mg, 'mg');
@@ -1129,7 +1144,7 @@
             updateBar('cl', totals.cl, targets.cl, 'mg');
             updateBar('s', totals.s, targets.s, 'mg');
 
-            // CAPSULE 6
+            // CAPSULE 6 (Trace minerals)
             updateBar('iron', totals.fe, targets.fe, 'mg');
             updateBar('zinc', totals.zn, targets.zn, 'mg');
             updateBar('iodine', totals.iodine, targets.iodine, 'mcg');
