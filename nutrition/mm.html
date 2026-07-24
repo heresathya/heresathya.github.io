@@ -239,7 +239,7 @@
             height: 3px;
             border-radius: 3px;
             background-color: var(--active-line-color);
-            transition: left 0.4s var(--ease-smooth), width 0.4s var(--ease-smooth);
+            transition: left 0.45s var(--ease-smooth), width 0.45s var(--ease-smooth);
             z-index: 1;
             pointer-events: none;
         }
@@ -866,7 +866,7 @@
         const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
         let currentSelectedDay = new Date().getDay();
 
-        // SLIDING UNDERLINE DAY SWITCHER ENGINE
+        // INSTANT & SMOOTH SLIDING UNDERLINE ENGINE
         function updateDayLine(activePill) {
             const line = document.getElementById('dayActiveLine');
             const capsule = document.getElementById('daySwitcher');
@@ -895,7 +895,7 @@
             document.getElementById('activeDayText').innerText = `(${dayNames[dayIdx]})`;
 
             if (activePillEl) {
-                setTimeout(() => updateDayLine(activePillEl), 10);
+                updateDayLine(activePillEl);
             }
 
             const foodGrid = document.getElementById('foodGrid');
@@ -916,6 +916,14 @@
 
             recalculateTotals();
         }
+
+        // BIND INSTANT CLICK TO DAY PILLS
+        document.querySelectorAll('.day-pill').forEach(pill => {
+            pill.addEventListener('click', function() {
+                const dayIdx = parseInt(this.dataset.day);
+                renderDay(dayIdx);
+            });
+        });
 
         // MASTER CHECKBOX ENGINE
         function toggleSelectAll() {
@@ -1209,8 +1217,8 @@
             }
         });
 
-        // UNIVERSAL FLUID WAVE ANIMATION ENGINE
-        const universalTargetLinks = document.querySelectorAll('.breadcrumbs a, .footer-links-row a, .logo, .day-pill');
+        // UNIVERSAL FLUID WAVE ANIMATION ENGINE FOR NAV LINKS & LOGO
+        const universalTargetLinks = document.querySelectorAll('.breadcrumbs a, .footer-links-row a, .logo');
 
         universalTargetLinks.forEach(link => {
             if (!link.querySelector('.nav-text')) {
@@ -1225,22 +1233,11 @@
 
         universalTargetLinks.forEach(link => {
             link.addEventListener('click', function(e) {
-                const isDayPill = this.classList.contains('day-pill');
                 const destination = this.getAttribute('href');
+                if (!destination || destination === '#') return;
 
                 universalTargetLinks.forEach(l => l.classList.remove('is-wave-loading'));
                 this.classList.add('is-wave-loading');
-
-                if (isDayPill) {
-                    const dayIdx = parseInt(this.dataset.day);
-                    setTimeout(() => {
-                        this.classList.remove('is-wave-loading');
-                        renderDay(dayIdx);
-                    }, 750);
-                    return;
-                }
-
-                if (!destination || destination === '#') return;
 
                 e.preventDefault();
                 sessionStorage.setItem('activeUniversalTargetUrl', this.href);
