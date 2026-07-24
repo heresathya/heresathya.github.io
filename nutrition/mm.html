@@ -357,7 +357,7 @@
             color: var(--text-main);
             display: flex;
             align-items: center;
-            gap: 0px;
+            gap: 8px;
             line-height: 1.2;
             transition: color 0.8s var(--ease-smooth);
         }
@@ -373,7 +373,7 @@
             filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25));
         }
 
-        /* TASK 1: COLUMN-BASED LAYOUT ENGINE (TOP-TO-BOTTOM FIRST) */
+        /* COLUMN-BASED LAYOUT ENGINE */
         .food-checklist-grid, .macros-grid {
             column-count: 2;
             column-gap: 32px;
@@ -549,7 +549,7 @@
             will-change: background-position;
         }
 
-        /* TASK 1 BREAKPOINT: PHONES & IPADS RENDER SINGLE COLUMN */
+        /* PHONES & IPADS RENDER SINGLE COLUMN */
         @media (max-width: 1024px) {
             .food-checklist-grid, .macros-grid { column-count: 1; }
         }
@@ -579,10 +579,10 @@
 </head>
 <body>
 
-    <!-- MASTER HEADER WITH SKYFALL SEARCH -->
+    <!-- MASTER HEADER WITH SKYFALL SEARCH (TASK 2: LOGO GOES TO /NUTRITION/INDEX.HTML) -->
     <header id="masterHeader">
         <div class="header-inner-view" id="headerMainView">
-            <a href="/study/index.html" class="logo">sathya.</a>
+            <a href="/nutrition/index.html" class="logo">sathya.</a>
             <div class="header-right-cluster">
                 <div class="theme-toggle" id="themeToggleBtn" aria-label="Toggle visual palette theme">
                     <svg class="sun-icon" viewBox="0 0 24 24">
@@ -632,15 +632,15 @@
             <div class="day-active-line" id="dayActiveLine"></div>
         </div>
 
-        <!-- TODAY WITH TASK 2 PERFECTLY ALIGNED MASTER CHECKBOX ICON -->
+        <!-- TODAY WITH TASK 1 MASTER CHECKBOX MOVED TO RIGHT SIDE -->
         <div class="wide-capsule">
             <div class="capsule-header-row">
                 <h2 class="capsule-title">
-                    <span class="custom-check-box" id="masterSelectCheckBox" onclick="toggleSelectAll()" style="cursor: pointer; display: inline-flex; margin-left: 20px; margin-right: 12px;" title="Select / Deselect all items">
-                        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                    </span>
                     Today <span id="activeDayText" style="color:var(--text-muted); font-size:16px;">(Sunday)</span>
                 </h2>
+                <span class="custom-check-box" id="masterSelectCheckBox" onclick="toggleSelectAll()" style="cursor: pointer; display: inline-flex;" title="Select / Deselect all items">
+                    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </span>
             </div>
             <div class="food-checklist-grid" id="foodGrid">
                 <!-- Populated dynamically -->
@@ -941,7 +941,7 @@
         const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
         let currentSelectedDay = new Date().getDay();
 
-        // TASK 3: INSTANT & SMOOTH SLIDING UNDERLINE ENGINE WITH SCROLL OFFSET FIX
+        // SLIDING UNDERLINE ENGINE WITH SCROLL OFFSET FIX
         function updateDayLine(activePill) {
             const line = document.getElementById('dayActiveLine');
             const capsule = document.getElementById('daySwitcher');
@@ -950,7 +950,6 @@
             const pillRect = activePill.getBoundingClientRect();
             const capsuleRect = capsule.getBoundingClientRect();
 
-            // Factor in horizontal scrollLeft distance so line reaches Fri & Sat correctly on mobile
             const left = pillRect.left - capsuleRect.left + capsule.scrollLeft;
             const width = pillRect.width;
 
@@ -1052,12 +1051,12 @@
                 'protein': '#ea4335',
                 'fiber': '#34a853',
                 
-                // Calories, Carbohydrates & Total Fat -> #ffb325 ('C' section of PCF icon)
+                // Calories, Carbohydrates & Total Fat -> #ffb325
                 'cal': '#ffb325',
                 'carbs': '#ffb325',
                 'fat': '#ffb325',
 
-                // Fatty Acid Profile & Lipids -> #ffd500 (Fat droplet icon)
+                // Fatty Acid Profile & Lipids -> #ffd500
                 'sfa': '#ffd500',
                 'unsat': '#ffd500',
                 'mufa': '#ffd500',
