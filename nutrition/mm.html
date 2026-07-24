@@ -102,6 +102,7 @@
             width: 95%;
             -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
+            /* SMOOTH DARK/LIGHT MODE COLOR TRANSITION ENGINE */
             transition: background-color 0.8s var(--ease-smooth), color 0.8s var(--ease-smooth);
         }
 
@@ -129,7 +130,7 @@
         .wide-capsule:nth-of-type(7) { animation-delay: 0.40s; }
         footer { animation-delay: 0.48s; }
 
-        /* HEADER DESIGN */
+        /* HEADER DESIGN WITH SMOOTH PALETTE TRANSITION */
         header {
             position: relative;
             background-color: var(--header-bg);
@@ -140,7 +141,7 @@
             margin: 0 auto 20px auto; 
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
             overflow: hidden; 
-            transition: background-color 0.8s var(--ease-smooth), border-color 0.8s var(--ease-smooth);
+            transition: background-color 0.8s var(--ease-smooth), border-color 0.8s var(--ease-smooth), box-shadow 0.8s var(--ease-smooth);
         }
 
         body:not(.light-mode) header { box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2); }
@@ -149,6 +150,9 @@
             position: absolute; inset: 0; width: 100%; height: 100%;
             display: flex; align-items: center; justify-content: space-between;
             padding: 0 32px;
+            will-change: transform, opacity;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
         }
 
         #headerMainView { opacity: 1; transform: translate3d(0, 0, 0); pointer-events: auto; z-index: 2; }
@@ -170,20 +174,77 @@
         }
 
         .header-right-cluster, .search-control-cluster { display: flex; align-items: center; gap: 20px; flex-shrink: 0; height: 100%; }
-        .logo { font-size: 26px; font-weight: 600; letter-spacing: -0.5px; color: var(--text-main); text-decoration: none !important; transition: color 0.8s var(--ease-smooth); flex-shrink: 0; }
+        .logo { 
+            font-size: 26px; 
+            font-weight: 600; 
+            letter-spacing: -0.5px; 
+            color: var(--text-main); 
+            text-decoration: none !important; 
+            transition: color 0.8s var(--ease-smooth); 
+            flex-shrink: 0; 
+        }
         
-        .ctrl-btn { background: none; border: none; outline: none; color: var(--text-main); cursor: pointer; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0; flex-shrink: 0; transition: opacity 0.2s var(--ease-smooth); }
+        .ctrl-btn { 
+            background: none; 
+            border: none; 
+            outline: none; 
+            color: var(--text-main); 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            width: 32px; 
+            height: 32px; 
+            padding: 0; 
+            flex-shrink: 0; 
+            transition: opacity 0.2s var(--ease-smooth), color 0.8s var(--ease-smooth); 
+        }
         .ctrl-btn:hover { opacity: 0.6; }
-        .ctrl-btn svg, .search-static-icon { width: 22px; height: 22px; fill: none; stroke: var(--text-main); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+        
+        .ctrl-btn svg, .search-static-icon { 
+            width: 22px; 
+            height: 22px; 
+            fill: none; 
+            stroke: var(--text-main); 
+            stroke-width: 2.2; 
+            stroke-linecap: round; 
+            stroke-linejoin: round; 
+            transition: stroke 0.8s var(--ease-smooth);
+        }
         .search-static-icon { opacity: 0.4; flex-shrink: 0; }
 
         .search-core-input {
             flex-grow: 1; background: transparent; border: none; outline: none; color: var(--text-main);
             font-family: 'Poppins', sans-serif; font-size: 16px; padding: 0 16px; width: 100%; min-width: 0; 
+            transition: color 0.8s var(--ease-smooth);
         }
 
-        .theme-toggle { width: 32px; height: 32px; position: relative; cursor: pointer; user-select: none; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .theme-toggle svg { position: absolute; top: 50%; left: 50%; width: 22px; height: 22px; fill: none; stroke: var(--text-main); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.8s var(--ease-smooth), opacity 0.8s var(--ease-smooth); }
+        .theme-toggle { 
+            width: 32px; 
+            height: 32px; 
+            position: relative; 
+            cursor: pointer; 
+            user-select: none; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            flex-shrink: 0; 
+        }
+
+        .theme-toggle svg { 
+            position: absolute; 
+            top: 50%; 
+            left: 50%; 
+            width: 22px; 
+            height: 22px; 
+            fill: none; 
+            stroke: var(--text-main); 
+            stroke-width: 2.2; 
+            stroke-linecap: round; 
+            stroke-linejoin: round; 
+            will-change: transform, opacity;
+            transition: transform 0.8s var(--ease-smooth), opacity 0.8s var(--ease-smooth), stroke 0.8s var(--ease-smooth); 
+        }
 
         .theme-toggle .sun-icon { opacity: 0; transform: translate(-50%, -50%) rotate(-90deg) scale(0.4); }
         .theme-toggle .moon-icon { opacity: 1; transform: translate(-50%, -50%) rotate(0deg) scale(1); }
@@ -195,8 +256,8 @@
         .breadcrumbs a, .breadcrumbs a:visited { color: var(--text-muted) !important; }
         .breadcrumbs a { color: var(--text-muted) !important; text-decoration: none !important; transition: color 0.4s var(--ease-smooth); }
         .breadcrumbs a:hover { color: var(--text-main) !important; }
-        .breadcrumbs .separator { color: var(--panel-border); font-weight: 400; user-select: none; }
-        .breadcrumbs .current { color: var(--text-main); opacity: 0.9; }
+        .breadcrumbs .separator { color: var(--panel-border); font-weight: 400; user-select: none; transition: color 0.8s var(--ease-smooth); }
+        .breadcrumbs .current { color: var(--text-main); opacity: 0.9; transition: color 0.8s var(--ease-smooth); }
 
         /* DAY SWITCHER CAPSULE WITH SMOOTH SLIDING UNDERLINE */
         .day-switcher-capsule {
@@ -210,6 +271,7 @@
             margin-bottom: 32px;
             width: 100%;
             position: relative;
+            transition: background-color 0.8s var(--ease-smooth), border-color 0.8s var(--ease-smooth);
         }
 
         .day-pill {
@@ -221,7 +283,7 @@
             font-weight: 500;
             padding: 8px 16px;
             cursor: pointer;
-            transition: color 0.3s var(--ease-smooth);
+            transition: color 0.4s var(--ease-smooth);
             position: relative;
             z-index: 2;
         }
@@ -239,14 +301,14 @@
             height: 3px;
             border-radius: 3px;
             background-color: var(--active-line-color);
-            transition: left 0.45s var(--ease-smooth), width 0.45s var(--ease-smooth);
+            transition: left 0.45s var(--ease-smooth), width 0.45s var(--ease-smooth), background-color 0.8s var(--ease-smooth);
             z-index: 1;
             pointer-events: none;
         }
 
         .contents-container { display: flex; flex-direction: column; gap: 32px; margin-bottom: 80px; width: 100%; }
 
-        /* WIDE CAPSULES */
+        /* WIDE CAPSULES WITH 0.8s PALETTE TRANSITION */
         .wide-capsule {
             background-color: var(--panel-bg);
             border: 1px solid var(--panel-border);
@@ -256,7 +318,10 @@
             display: flex;
             flex-direction: column;
             width: 100%;
-            transition: transform 0.55s var(--ease-smooth), box-shadow 0.55s var(--ease-smooth), border-color 0.55s var(--ease-smooth);
+            transition: transform 0.55s var(--ease-smooth), 
+                        box-shadow 0.55s var(--ease-smooth), 
+                        border-color 0.55s var(--ease-smooth),
+                        background-color 0.8s var(--ease-smooth);
         }
 
         body:not(.light-mode) .wide-capsule { box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4); }
@@ -287,6 +352,7 @@
             align-items: center;
             gap: 8px;
             line-height: 1.2;
+            transition: color 0.8s var(--ease-smooth);
         }
 
         /* INLINE IMAGE ICON ENGINE */
@@ -325,7 +391,7 @@
             border-radius: 18px;
             cursor: pointer;
             user-select: none;
-            transition: background-color 0.3s var(--ease-smooth), border-color 0.3s var(--ease-smooth);
+            transition: background-color 0.8s var(--ease-smooth), border-color 0.8s var(--ease-smooth);
             width: 100%;
         }
 
@@ -340,7 +406,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s var(--ease-smooth);
+            transition: all 0.3s var(--ease-smooth), border-color 0.8s var(--ease-smooth);
             flex-shrink: 0;
         }
 
@@ -355,8 +421,8 @@
         .food-item-checkbox input:checked + .custom-check-box svg,
         .custom-check-box.checked svg { opacity: 1; }
 
-        .food-name { font-size: 15.5px; font-weight: 500; color: var(--text-main); }
-        .food-qty { font-size: 13.5px; color: var(--text-muted); margin-left: 6px; }
+        .food-name { font-size: 15.5px; font-weight: 500; color: var(--text-main); transition: color 0.8s var(--ease-smooth); }
+        .food-qty { font-size: 13.5px; color: var(--text-muted); margin-left: 6px; transition: color 0.8s var(--ease-smooth); }
 
         /* MACROS & NUTRIENTS PROGRESS CARDS */
         .macro-card {
@@ -374,7 +440,7 @@
             font-weight: 500;
         }
 
-        .macro-val { color: var(--text-muted); font-size: 13px; }
+        .macro-val { color: var(--text-muted); font-size: 13px; transition: color 0.8s var(--ease-smooth); }
         
         .macro-badge {
             padding: 2px 8px;
@@ -384,7 +450,7 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s var(--ease-smooth);
+            transition: all 0.4s var(--ease-smooth);
         }
 
         /* COMPLETED 100% CIRCLE TICK BADGE */
@@ -414,6 +480,7 @@
             border-radius: 10px;
             overflow: hidden;
             width: 100%;
+            transition: background-color 0.8s var(--ease-smooth);
         }
 
         .progress-fill {
@@ -421,20 +488,22 @@
             background-color: var(--accent-green);
             border-radius: 10px;
             width: 0%;
-            transition: width 0.8s var(--ease-smooth);
+            transition: width 0.8s var(--ease-smooth), background-color 0.8s var(--ease-smooth);
         }
 
         /* CUSTOM PROGRESS BAR COLORS */
         #proteinBar { background-color: #ea4335 !important; }
         #fiberBar { background-color: #34a853 !important; }
-        #calBar, #carbsBar { background-color: #fbbc05 !important; }
 
-        /* Total Fat & Fatty Acid Profile - Honey Gold */
-        #fatBar, #sfaBar, #unsatBar, #mufaBar, #pufaBar, #alaBar, #epaBar, #dhaBar, #o6Bar {
-            background-color: #f5a623 !important;
+        /* MACROS: CALORIES, CARBS, TOTAL FAT -> #ffb325 */
+        #calBar, #carbsBar, #fatBar { background-color: #ffb325 !important; }
+
+        /* FATTY ACID PROFILE & LIPIDS -> #ffd500 */
+        #sfaBar, #unsatBar, #mufaBar, #pufaBar, #alaBar, #epaBar, #dhaBar, #o6Bar {
+            background-color: #ffd500 !important;
         }
 
-        /* Carotenoids Capsule - Beta Orange, Alpha Leaf Green */
+        /* CAROTENOIDS CAPSULE -> Beta Orange, Alpha Leaf Green */
         #bCaroteneBar { background-color: #ff7a00 !important; }
         #aCaroteneBar { background-color: #34a853 !important; }
 
@@ -443,7 +512,7 @@
         .footer-links-row { display: flex; justify-content: center; align-items: center; gap: 32px; flex-wrap: wrap; width: 100%; }
         .footer-links-row a { color: var(--text-muted) !important; text-decoration: none !important; font-size: 14px; font-weight: 400; display: inline-block; transition: color 0.4s var(--ease-smooth); }
         .footer-links-row a:hover { color: var(--text-main) !important; }
-        .copyright-tag { color: var(--text-muted); opacity: 0.6; font-size: 12.5px; letter-spacing: 0.2px; }
+        .copyright-tag { color: var(--text-muted); opacity: 0.6; font-size: 12.5px; letter-spacing: 0.2px; transition: color 0.8s var(--ease-smooth); }
 
         .nav-text { display: inline-block !important; white-space: nowrap !important; transition: transform 0.4s var(--ease-smooth); }
 
@@ -962,21 +1031,28 @@
             return hex;
         }
 
+        // ACCURATE ICON COLOR MATCHING ENGINE
         function getBarColor(id) {
             const customColors = {
                 'protein': '#ea4335',
                 'fiber': '#34a853',
-                'cal': '#fbbc05',
-                'carbs': '#fbbc05',
-                'fat': '#f5a623',
-                'sfa': '#f5a623',
-                'unsat': '#f5a623',
-                'mufa': '#f5a623',
-                'pufa': '#f5a623',
-                'ala': '#f5a623',
-                'epa': '#f5a623',
-                'dha': '#f5a623',
-                'o6': '#f5a623',
+                
+                // Calories, Carbohydrates & Total Fat -> #ffb325 ('C' section of PCF icon)
+                'cal': '#ffb325',
+                'carbs': '#ffb325',
+                'fat': '#ffb325',
+
+                // Fatty Acid Profile & Lipids -> #ffd500 (Fat droplet icon)
+                'sfa': '#ffd500',
+                'unsat': '#ffd500',
+                'mufa': '#ffd500',
+                'pufa': '#ffd500',
+                'ala': '#ffd500',
+                'epa': '#ffd500',
+                'dha': '#ffd500',
+                'o6': '#ffd500',
+
+                // Carotenoids -> Orange & Leaf Green
                 'bCarotene': '#ff7a00',
                 'aCarotene': '#34a853'
             };
@@ -1155,7 +1231,7 @@
             container.innerHTML = htmlMarkup;
         })();
 
-        // HEADER SKYFALL SEARCH & PALETTE ENGINE
+        // HEADER SKYFALL SEARCH & SMOOTH PALETTE ENGINE
         const toggleBtn = document.getElementById('themeToggleBtn');
         const bodyElement = document.body;
         const systemLightQuery = window.matchMedia('(prefers-color-scheme: light)');
@@ -1169,9 +1245,17 @@
         function applyTargetPalette() {
             const activeSessionOverride = sessionStorage.getItem('dashboard-theme');
             if (activeSessionOverride) {
-                bodyElement.classList.toggle('light-mode', activeSessionOverride === 'light');
+                if (activeSessionOverride === 'light') {
+                    bodyElement.classList.add('light-mode');
+                } else {
+                    bodyElement.classList.remove('light-mode');
+                }
             } else {
-                bodyElement.classList.toggle('light-mode', systemLightQuery.matches);
+                if (systemLightQuery.matches) {
+                    bodyElement.classList.add('light-mode');
+                } else {
+                    bodyElement.classList.remove('light-mode');
+                }
             }
         }
 
@@ -1179,7 +1263,11 @@
 
         systemLightQuery.addEventListener('change', (e) => {
             sessionStorage.removeItem('dashboard-theme');
-            bodyElement.classList.toggle('light-mode', e.matches);
+            if (e.matches) {
+                bodyElement.classList.add('light-mode');
+            } else {
+                bodyElement.classList.remove('light-mode');
+            }
             recalculateTotals();
             const activePill = document.querySelector('.day-pill.active');
             if (activePill) updateDayLine(activePill);
@@ -1187,8 +1275,14 @@
 
         toggleBtn.addEventListener('click', (e) => {
             e.stopPropagation(); 
-            const isLight = bodyElement.classList.toggle('light-mode');
-            sessionStorage.setItem('dashboard-theme', isLight ? 'light' : 'dark');
+            const isCurrentlyLight = bodyElement.classList.contains('light-mode');
+            if (isCurrentlyLight) {
+                bodyElement.classList.remove('light-mode');
+                sessionStorage.setItem('dashboard-theme', 'dark');
+            } else {
+                bodyElement.classList.add('light-mode');
+                sessionStorage.setItem('dashboard-theme', 'light');
+            }
             recalculateTotals();
             const activePill = document.querySelector('.day-pill.active');
             if (activePill) updateDayLine(activePill);
