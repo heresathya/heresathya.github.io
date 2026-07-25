@@ -62,6 +62,9 @@
             --cascade-distance: 24px;
             --cascade-duration-exit: 0.2s;
             --cascade-duration-entry: 0.28s;
+
+            --track-duration: 0.38s;
+            --active-day-index: 0;
         }
 
         body.light-mode {
@@ -111,7 +114,7 @@
             to { opacity: 1; transform: translate3d(0, 0, 0); }
         }
 
-        header, .breadcrumbs, .day-switcher-capsule, .wide-capsule, footer {
+        header, .breadcrumbs, .day-switcher-capsule, .days-track-wrapper, .wide-capsule, footer {
             opacity: 1;
             will-change: transform, opacity;
             animation: masterEntrance 1.2s var(--ease-smooth) backwards;
@@ -120,14 +123,14 @@
         header { animation-delay: 0.04s; }
         .breadcrumbs { animation-delay: 0.14s; } 
         .day-switcher-capsule { animation-delay: 0.18s; }
-        .wide-capsule:nth-of-type(1) { animation-delay: 0.20s; }
-        .wide-capsule:nth-of-type(2) { animation-delay: 0.24s; }
-        .wide-capsule:nth-of-type(3) { animation-delay: 0.28s; }
-        .wide-capsule:nth-of-type(4) { animation-delay: 0.28s; }
-        .wide-capsule:nth-of-type(5) { animation-delay: 0.32s; }
-        .wide-capsule:nth-of-type(6) { animation-delay: 0.36s; }
-        .wide-capsule:nth-of-type(7) { animation-delay: 0.40s; }
-        footer { animation-delay: 0.48s; }
+        .days-track-wrapper { animation-delay: 0.20s; }
+        .wide-capsule:nth-of-type(1) { animation-delay: 0.24s; }
+        .wide-capsule:nth-of-type(2) { animation-delay: 0.28s; }
+        .wide-capsule:nth-of-type(3) { animation-delay: 0.32s; }
+        .wide-capsule:nth-of-type(4) { animation-delay: 0.36s; }
+        .wide-capsule:nth-of-type(5) { animation-delay: 0.40s; }
+        .wide-capsule:nth-of-type(6) { animation-delay: 0.44s; }
+        footer { animation-delay: 0.52s; }
 
         /* HEADER DESIGN */
         header {
@@ -308,12 +311,36 @@
             height: 3px;
             border-radius: 3px;
             background-color: var(--active-line-color);
-            transition: left 0.45s var(--ease-smooth), width 0.45s var(--ease-smooth), background-color 0.8s var(--ease-smooth);
+            transition: left var(--track-duration, 0.38s) var(--ease-premium), 
+                        width var(--track-duration, 0.38s) var(--ease-premium), 
+                        background-color 0.8s var(--ease-smooth);
             z-index: 1;
             pointer-events: none;
         }
 
         .contents-container { display: flex; flex-direction: column; gap: 32px; margin-bottom: 80px; width: 100%; }
+
+        /* CONTINUOUS 7-CAPSULE HORIZONTAL RIBBON WINDOW */
+        .days-track-wrapper {
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+            border-radius: 28px;
+        }
+
+        .days-track {
+            display: flex;
+            width: 100%;
+            will-change: transform;
+            transform: translate3d(calc(var(--active-day-index) * -100%), 0, 0);
+            transition: transform var(--track-duration, 0.38s) var(--ease-premium);
+        }
+
+        .day-slide {
+            flex: 0 0 100%;
+            width: 100%;
+            box-sizing: border-box;
+        }
 
         /* WIDE CAPSULES */
         .wide-capsule {
@@ -326,7 +353,6 @@
             flex-direction: column;
             width: 100%;
             position: relative;
-            overflow: hidden; /* MASK FOR DIRECTIONAL SLIDING TRACK */
             transition: transform 0.55s var(--ease-smooth), 
                         box-shadow 0.55s var(--ease-smooth), 
                         border-color 0.55s var(--ease-smooth),
@@ -375,7 +401,7 @@
             filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25));
         }
 
-        /* RIGID 2-COLUMN CSS GRID WITH DIRECTIONAL SLIDE TRACK */
+        /* RIGID 2-COLUMN CSS GRID FOR FOOD ITEMS */
         .food-checklist-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -383,7 +409,6 @@
             grid-template-rows: repeat(7, auto);
             gap: 16px 32px;
             width: 100%;
-            will-change: transform, opacity;
         }
 
         .macros-grid {
@@ -734,18 +759,10 @@
             <div class="day-active-line" id="dayActiveLine"></div>
         </div>
 
-        <!-- TODAY WITH MASTER CHECKBOX ON RIGHT SIDE -->
-        <div class="wide-capsule">
-            <div class="capsule-header-row">
-                <h2 class="capsule-title">
-                    Today <span id="activeDayText" style="color:var(--text-muted); font-size:16px;">(Sunday)</span>
-                </h2>
-                <span class="custom-check-box" id="masterSelectCheckBox" onclick="toggleSelectAll()" style="cursor: pointer; display: inline-flex;" title="Select / Deselect all items">
-                    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                </span>
-            </div>
-            <div class="food-checklist-grid" id="foodGrid">
-                <!-- Populated dynamically -->
+        <!-- 7-CAPSULE HORIZONTAL RIBBON TRACK -->
+        <div class="days-track-wrapper">
+            <div class="days-track" id="daysTrack">
+                <!-- 7 PRE-RENDERED DAY CAPSULES GENERATED DYNAMICALLY -->
             </div>
         </div>
 
@@ -874,8 +891,8 @@
                 <div class="macro-card"><div class="macro-top-label"><span>Selenium</span><span class="macro-badge" id="seBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg><img class="badge-warn-img" src="https://github.com/minsathya/minsathya.github.io/blob/main/nutrition/images/warning.png?raw=true" alt="Warning"></span></div><div class="macro-val" id="seVal">0 mcg / 55 mcg</div><div class="progress-track"><div class="progress-fill" id="seBar"></div></div></div>
                 <div class="macro-card"><div class="macro-top-label"><span>Copper</span><span class="macro-badge" id="cuBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg><img class="badge-warn-img" src="https://github.com/minsathya/minsathya.github.io/blob/main/nutrition/images/warning.png?raw=true" alt="Warning"></span></div><div class="macro-val" id="cuVal">0 mcg / 900 mcg</div><div class="progress-track"><div class="progress-fill" id="cuBar"></div></div></div>
                 <div class="macro-card"><div class="macro-top-label"><span>Fluoride</span><span class="macro-badge" id="fBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg><img class="badge-warn-img" src="https://github.com/minsathya/minsathya.github.io/blob/main/nutrition/images/warning.png?raw=true" alt="Warning"></span></div><div class="macro-val" id="fVal">0 mcg / 4000 mcg</div><div class="progress-track"><div class="progress-fill" id="fBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Chromium</span><span class="macro-badge" id="crBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg><img class="badge-warn-img" src="https://github.com/minsathya/minsathya.github.io/blob/main/nutrition/images/warning.png?raw=true" alt="Warning"></span></div><div class="macro-val" id="crVal">0 mcg / 35 mcg</div><div class="progress-track"><div class="progress-fill" id="crBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Molybdenum</span><span class="macro-badge" id="moBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg><img class="badge-warn-img" src="https://github.com/minsathya/minsathya.github.io/blob/main/nutrition/images/warning.png?raw=true" alt="Warning"></span></div><div class="macro-val" id="moVal">0 mcg / 45 mcg</div><div class="progress-track"><div class="progress-fill" id="moBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Chromium</span><span class="macro-badge" id="crBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg><img class="badge-warn-img" src="https://github.com/minsathya/minsathya.github.io/blob/main/nutrition/images/warning.png?raw=true" alt="Warning"></span></div><div class="macro-val" id="crVal">0 mcg / 35 mcg</div><div class="progress-track"><div class="progress-fill" id="crBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Molybdenum</span><span class="macro-badge" id="moBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg><img class="badge-warn-img" src="https://github.com/minsathya/minsathya.github.io/blob/main/nutrition/images/warning.png?raw=true" alt="Warning"></span></div><div class="macro-val" id="moVal">0 mcg / 45 mcg</div><div class="progress-track"><div class="progress-fill" id="moBar"></div></div></div>
             </div>
         </div>
     </main>
@@ -894,7 +911,7 @@
     </footer>
 
     <script>
-        // MASTER 24 FOOD DATABASE (INCLUDES 5g IODIZED SALT UPDATE)
+        // MASTER 24 FOOD DATABASE
         const foodMasterDB = {
             'Chickpeas': { cal: 378, pro: 20.5, fiber: 12.2, carb: 63.0, fat: 6.07, sug: 10.7, lac: 0, sfa: 0.60, unsat: 5.47, mufa: 1.36, pufa: 4.11, ala: 0.11, epa: 0, dha: 0, o6: 4.00, bCar: 40, aCar: 0, vitA: 3, vitB1: 0.48, vitB2: 0.21, vitB3: 1.54, vitB5: 1.60, vitB6: 0.54, vitB7: 10, vitB9: 557, vitB12: 0, vitC: 4.0, vitD: 0, vitE: 0.82, vitK: 9.0, ca: 105, p: 366, mg: 115, na: 24, k: 875, cl: 10, s: 180, fe: 6.2, zn: 3.4, iodine: 0, mn: 2.2, se: 8.2, cu: 850, f: 120, cr: 6, mo: 45 },
             'Paneer': { cal: 133, pro: 9.1, fiber: 0, carb: 1.6, fat: 11.50, sug: 1.6, lac: 1.2, sfa: 7.20, unsat: 4.30, mufa: 3.90, pufa: 0.40, ala: 0.05, epa: 0, dha: 0, o6: 0.35, bCar: 15, aCar: 0, vitA: 85, vitB1: 0.02, vitB2: 0.18, vitB3: 0.10, vitB5: 0.30, vitB6: 0.04, vitB7: 2, vitB9: 12, vitB12: 0.45, vitC: 0, vitD: 0.20, vitE: 0.15, vitK: 1.0, ca: 240, p: 140, mg: 18, na: 12, k: 65, cl: 30, s: 80, fe: 0.2, zn: 1.2, iodine: 8, mn: 0.02, se: 7.5, cu: 40, f: 10, cr: 1, mo: 5 },
@@ -922,9 +939,9 @@
             'Iodized salt': { cal: 0, pro: 0, fiber: 0, carb: 0, fat: 0, sug: 0, lac: 0, sfa: 0, unsat: 0, mufa: 0, pufa: 0, ala: 0, epa: 0, dha: 0, o6: 0, bCar: 0, aCar: 0, vitA: 0, vitB1: 0, vitB2: 0, vitB3: 0, vitB5: 0, vitB6: 0, vitB7: 0, vitB9: 0, vitB12: 0, vitC: 0, vitD: 0, vitE: 0, vitK: 0, ca: 0, p: 0, mg: 0, na: 1963, k: 0, cl: 3038, s: 0, fe: 0, zn: 0, iodine: 150, mn: 0, se: 0, cu: 0, f: 19, cr: 0, mo: 0 }
         };
 
-        // STRICT ITEM SEQUENCE FOR EVERY DAY (STANDARDIZED TO 5g IODIZED SALT)
+        // STRICT ITEM SEQUENCE FOR EVERY DAY
         const weeklyMenu = {
-            0: [ // SUNDAY
+            0: [
                 { name: 'Chickpeas', key: 'Chickpeas', qty: '100 gms raw' },
                 { name: 'Curd', key: 'Curd', qty: '200 ml' },
                 { name: 'Chia seeds', key: 'Chia seeds', qty: '10 gms' },
@@ -940,7 +957,7 @@
                 { name: 'Sesame oil', key: 'Sesame oil', qty: '20 ml used in a day' },
                 { name: 'Iodized salt', key: 'Iodized salt', qty: '5 gms used in cooking' }
             ],
-            1: [ // MONDAY
+            1: [
                 { name: 'Peanuts', key: 'Peanuts', qty: '80 gms raw' },
                 { name: 'Curd', key: 'Curd', qty: '200 ml' },
                 { name: 'Chia seeds', key: 'Chia seeds', qty: '10 gms' },
@@ -956,7 +973,7 @@
                 { name: 'Sesame oil', key: 'Sesame oil', qty: '20 ml used in a day' },
                 { name: 'Iodized salt', key: 'Iodized salt', qty: '5 gms used in cooking' }
             ],
-            2: [ // TUESDAY
+            2: [
                 { name: 'Green gram', key: 'Green gram', qty: '100 gms raw' },
                 { name: 'Curd', key: 'Curd', qty: '200 ml' },
                 { name: 'Chia seeds', key: 'Chia seeds', qty: '10 gms' },
@@ -972,7 +989,7 @@
                 { name: 'Sesame oil', key: 'Sesame oil', qty: '20 ml used in a day' },
                 { name: 'Iodized salt', key: 'Iodized salt', qty: '5 gms used in cooking' }
             ],
-            3: [ // WEDNESDAY
+            3: [
                 { name: 'Black Chickpeas', key: 'Black Chickpeas', qty: '100 gms raw' },
                 { name: 'Curd', key: 'Curd', qty: '200 ml' },
                 { name: 'Chia seeds', key: 'Chia seeds', qty: '10 gms' },
@@ -988,7 +1005,7 @@
                 { name: 'Sesame oil', key: 'Sesame oil', qty: '20 ml used in a day' },
                 { name: 'Iodized salt', key: 'Iodized salt', qty: '5 gms used in cooking' }
             ],
-            4: [ // THURSDAY
+            4: [
                 { name: 'Red Lobia', key: 'Red Lobia', qty: '100 gms raw' },
                 { name: 'Curd', key: 'Curd', qty: '200 ml' },
                 { name: 'Chia seeds', key: 'Chia seeds', qty: '10 gms' },
@@ -1004,7 +1021,7 @@
                 { name: 'Sesame oil', key: 'Sesame oil', qty: '20 ml used in a day' },
                 { name: 'Iodized salt', key: 'Iodized salt', qty: '5 gms used in cooking' }
             ],
-            5: [ // FRIDAY
+            5: [
                 { name: 'Rajma', key: 'Rajma', qty: '100 gms raw' },
                 { name: 'Curd', key: 'Curd', qty: '200 ml' },
                 { name: 'Chia seeds', key: 'Chia seeds', qty: '10 gms' },
@@ -1020,7 +1037,7 @@
                 { name: 'Sesame oil', key: 'Sesame oil', qty: '20 ml used in a day' },
                 { name: 'Iodized salt', key: 'Iodized salt', qty: '5 gms used in cooking' }
             ],
-            6: [ // SATURDAY
+            6: [
                 { name: 'Horse gram', key: 'Horse gram', qty: '100 gms raw' },
                 { name: 'Curd', key: 'Curd', qty: '200 ml' },
                 { name: 'Chia seeds', key: 'Chia seeds', qty: '10 gms' },
@@ -1048,31 +1065,32 @@
             fe: 8, zn: 11, iodine: 150, mn: 2.3, se: 55, cu: 900, f: 4000, cr: 35, mo: 45
         };
 
-        // CEILING NUTRIENTS (UPPER MAXIMUM LIMITS)
+        // CEILING NUTRIENTS
         const ceilingNutrients = ['sugars', 'lactose', 'fat', 'sfa', 'na', 'cl'];
 
         const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
         
         let currentSelectedDay = 0;
-        let isDayTransitioning = false;
+        let isCascadeAnimating = false;
 
         // STATE STORE & CASCADING ANIMATION ENGINE
         const nutrientStateStore = {};
         const animatedCapsules = new Set();
 
-        // SESSIONSTORAGE NAMESPACE ENGINE (STARTS FRESH & UNTICKED ON NEW SESSION)
-        function saveChecklistState() {
-            const checkboxes = document.querySelectorAll('#foodGrid input[type="checkbox"]');
+        function saveChecklistState(dayIdx) {
+            const grid = document.getElementById(`foodGrid_${dayIdx}`);
+            if (!grid) return;
+            const checkboxes = grid.querySelectorAll('input[type="checkbox"]');
             const checkedIndices = [];
             checkboxes.forEach((cb, idx) => {
                 if (cb.checked) checkedIndices.push(idx);
             });
-            sessionStorage.setItem(`meal_v3_day_${currentSelectedDay}`, JSON.stringify(checkedIndices));
+            sessionStorage.setItem(`meal_v3_day_${dayIdx}`, JSON.stringify(checkedIndices));
         }
 
         function loadChecklistState(dayIdx) {
             const saved = sessionStorage.getItem(`meal_v3_day_${dayIdx}`);
-            if (!saved) return []; // Default to empty array -> ALL UNTICKED
+            if (!saved) return [];
             try {
                 return JSON.parse(saved);
             } catch (e) {
@@ -1080,14 +1098,14 @@
             }
         }
 
-        function handleCheckboxChange() {
-            saveChecklistState();
+        function handleCheckboxChange(dayIdx) {
+            saveChecklistState(dayIdx);
             recalculateTotals();
             resetAnimationState();
         }
 
-        // SLIDING UNDERLINE ENGINE WITH SCROLL OFFSET FIX
-        function updateDayLine(activePill) {
+        // SLIDING UNDERLINE ENGINE WITH DYNAMIC DISTANCE TIMING
+        function updateDayLine(activePill, durationMs) {
             const line = document.getElementById('dayActiveLine');
             const capsule = document.getElementById('daySwitcher');
             if (!line || !activePill || !capsule) return;
@@ -1098,100 +1116,105 @@
             const left = pillRect.left - capsuleRect.left + capsule.scrollLeft;
             const width = pillRect.width;
 
+            line.style.transition = `left ${durationMs}ms var(--ease-premium), width ${durationMs}ms var(--ease-premium), background-color 0.8s var(--ease-smooth)`;
             line.style.left = `${left}px`;
             line.style.width = `${width}px`;
         }
 
-        // OPTION B DIRECTIONAL TAB CAROUSEL WITH SOFT LIFT-OFF & CUSHIONED LANDING
-        function renderDay(dayIdx, isInitial = false) {
-            if (isDayTransitioning && !isInitial) return;
+        // PRE-RENDER ALL 7 DAY CAPSULES INTO THE RIBBON TRACK
+        function initDaysTrack() {
+            const track = document.getElementById('daysTrack');
+            if (!track) return;
 
-            const foodGrid = document.getElementById('foodGrid');
-            if (!foodGrid) return;
+            track.innerHTML = '';
 
-            let activePillEl = null;
-            document.querySelectorAll('.day-pill').forEach(pill => {
-                const isActive = parseInt(pill.dataset.day) === dayIdx;
-                pill.classList.toggle('active', isActive);
-                if (isActive) activePillEl = pill;
-            });
+            for (let dayIdx = 0; dayIdx < 7; dayIdx++) {
+                const daySlide = document.createElement('div');
+                daySlide.className = 'day-slide';
 
-            document.getElementById('activeDayText').innerText = `(${dayNames[dayIdx]})`;
+                const capsule = document.createElement('div');
+                capsule.className = 'wide-capsule';
 
-            if (activePillEl) {
-                updateDayLine(activePillEl);
-            }
+                const headerRow = document.createElement('div');
+                headerRow.className = 'capsule-header-row';
+                headerRow.innerHTML = `
+                    <h2 class="capsule-title">
+                        Today <span style="color:var(--text-muted); font-size:16px;">(${dayNames[dayIdx]})</span>
+                    </h2>
+                    <span class="custom-check-box" id="masterSelectCheckBox_${dayIdx}" onclick="toggleSelectAll(${dayIdx})" style="cursor: pointer; display: inline-flex;" title="Select / Deselect all items">
+                        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </span>
+                `;
 
-            // Populate Table Content Helper
-            const populateTable = (targetDay) => {
-                foodGrid.innerHTML = '';
-                const todayItems = weeklyMenu[targetDay] || [];
-                const savedCheckedIndices = loadChecklistState(targetDay);
+                const grid = document.createElement('div');
+                grid.className = 'food-checklist-grid';
+                grid.id = `foodGrid_${dayIdx}`;
+
+                const todayItems = weeklyMenu[dayIdx] || [];
+                const savedCheckedIndices = loadChecklistState(dayIdx);
 
                 todayItems.forEach((item, idx) => {
                     const isChecked = savedCheckedIndices.includes(idx);
                     const label = document.createElement('label');
                     label.className = 'food-item-checkbox';
                     label.innerHTML = `
-                        <input type="checkbox" data-idx="${idx}" ${isChecked ? 'checked' : ''} onchange="handleCheckboxChange()">
+                        <input type="checkbox" data-idx="${idx}" ${isChecked ? 'checked' : ''} onchange="handleCheckboxChange(${dayIdx})">
                         <div class="custom-check-box"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
                         <span class="food-name">${item.name}<span class="food-qty">– ${item.qty}</span></span>
                     `;
-                    foodGrid.appendChild(label);
+                    grid.appendChild(label);
                 });
-            };
 
-            if (isInitial) {
-                currentSelectedDay = dayIdx;
-                populateTable(dayIdx);
-                recalculateTotals();
-                resetAnimationState();
-                return;
+                capsule.appendChild(headerRow);
+                capsule.appendChild(grid);
+                daySlide.appendChild(capsule);
+                track.appendChild(daySlide);
             }
-
-            // OPTION B MOTION DIRECTION (Following Underline Path)
-            // Sun -> Mon (Forward / Right Underline): Old Table exits RIGHT (+60%), New Table enters from LEFT (-60%)
-            // Mon -> Sun (Backward / Left Underline): Old Table exits LEFT (-60%), New Table enters from RIGHT (+60%)
-            const isForward = dayIdx > currentSelectedDay;
-            isDayTransitioning = true;
-
-            // Phase 1: Soft Exit Lift-Off
-            foodGrid.style.transition = 'transform 0.18s cubic-bezier(0.4, 0, 1, 1), opacity 0.18s ease-in';
-            foodGrid.style.transform = isForward ? 'translate3d(60%, 0, 0)' : 'translate3d(-60%, 0, 0)';
-            foodGrid.style.opacity = '0';
-
-            setTimeout(() => {
-                currentSelectedDay = dayIdx;
-                populateTable(dayIdx);
-                recalculateTotals();
-                resetAnimationState();
-
-                // Phase 2: Instant Off-Screen Positioning for Entry
-                foodGrid.style.transition = 'none';
-                foodGrid.style.transform = isForward ? 'translate3d(-60%, 0, 0)' : 'translate3d(60%, 0, 0)';
-                foodGrid.style.opacity = '0';
-
-                // Force DOM reflow
-                foodGrid.offsetHeight;
-
-                // Phase 3: Cushioned Spring Glide & Soft Landing
-                foodGrid.style.transition = 'transform 0.42s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.32s cubic-bezier(0.25, 1, 0.5, 1)';
-                foodGrid.style.transform = 'translate3d(0, 0, 0)';
-                foodGrid.style.opacity = '1';
-
-                setTimeout(() => {
-                    isDayTransitioning = false;
-                }, 420);
-
-            }, 180);
         }
 
-        // BIND INSTANT CLICK & SCROLL EVENTS TO DAY SWITCHER
+        // DYNAMIC DISTANCE-BASED DURATION CALCULATOR (SMOOTH ACCELERATION & SOFT LANDING)
+        function getTransitionDuration(dayGap) {
+            if (dayGap === 0) return 0;
+            // Base 380ms for 1 day + 95ms per skipped day (e.g. 6 days = ~855ms)
+            return 380 + (dayGap - 1) * 95;
+        }
+
+        // RENDER / GLIDE TO ACTIVE DAY ACROSS THE 7-CAPSULE HORIZONTAL RIBBON
+        function selectDay(targetDayIdx, isInitial = false) {
+            const track = document.getElementById('daysTrack');
+            if (!track) return;
+
+            const dayGap = Math.abs(targetDayIdx - currentSelectedDay);
+            const durationMs = isInitial ? 0 : getTransitionDuration(dayGap);
+
+            currentSelectedDay = targetDayIdx;
+
+            // Update pills
+            let activePillEl = null;
+            document.querySelectorAll('.day-pill').forEach(pill => {
+                const isActive = parseInt(pill.dataset.day) === targetDayIdx;
+                pill.classList.toggle('active', isActive);
+                if (isActive) activePillEl = pill;
+            });
+
+            if (activePillEl) {
+                updateDayLine(activePillEl, durationMs);
+            }
+
+            // Move the Ribbon Track smoothly
+            document.documentElement.style.setProperty('--active-day-index', targetDayIdx);
+            document.documentElement.style.setProperty('--track-duration', `${durationMs}ms`);
+
+            recalculateTotals();
+            resetAnimationState();
+        }
+
+        // BIND CLICK & SCROLL EVENTS TO DAY SWITCHER
         document.querySelectorAll('.day-pill').forEach(pill => {
             pill.addEventListener('click', function() {
                 const dayIdx = parseInt(this.dataset.day);
                 if (dayIdx !== currentSelectedDay) {
-                    renderDay(dayIdx);
+                    selectDay(dayIdx);
                 }
             });
         });
@@ -1200,29 +1223,27 @@
         if (daySwitcherEl) {
             daySwitcherEl.addEventListener('scroll', () => {
                 const activePill = document.querySelector('.day-pill.active');
-                if (activePill) updateDayLine(activePill);
+                if (activePill) updateDayLine(activePill, 0);
             });
         }
 
-        // MASTER CHECKBOX ENGINE (STAGGERED ONE-BY-ONE CASCADE ANIMATION)
-        let isCascadeAnimating = false;
+        // MASTER CHECKBOX ENGINE (STAGGERED CASCADE ANIMATION)
+        function toggleSelectAll(dayIdx) {
+            if (isCascadeAnimating) return;
+            const grid = document.getElementById(`foodGrid_${dayIdx}`);
+            if (!grid) return;
 
-        function toggleSelectAll() {
-            if (isCascadeAnimating || isDayTransitioning) return; // Prevent spamming
-            const checkboxes = Array.from(document.querySelectorAll('#foodGrid input[type="checkbox"]'));
+            const checkboxes = Array.from(grid.querySelectorAll('input[type="checkbox"]'));
             if (checkboxes.length === 0) return;
 
             const allChecked = checkboxes.every(cb => cb.checked);
             const targetState = !allChecked;
             isCascadeAnimating = true;
 
-            // Sequence: 0 -> N-1 when selecting (Top to Bottom down Left Col, then Right Col on Laptop / Top to Bottom on Mobile)
-            // Sequence: N-1 -> 0 when deselecting (Bottom to Top up Right Col, then Left Col on Laptop / Bottom to Top on Mobile)
             const sequence = targetState 
                 ? checkboxes.map((_, i) => i) 
                 : checkboxes.map((_, i) => checkboxes.length - 1 - i);
 
-            // Stagger delay per item so the full cascade takes ~0.65 to 0.75 seconds total
             const stepDelay = Math.max(35, Math.floor(650 / checkboxes.length));
 
             sequence.forEach((itemIdx, seqStep) => {
@@ -1230,7 +1251,7 @@
                     const cb = checkboxes[itemIdx];
                     if (cb && cb.checked !== targetState) {
                         cb.checked = targetState;
-                        saveChecklistState();
+                        saveChecklistState(dayIdx);
                         recalculateTotals();
                         resetAnimationState();
                     }
@@ -1242,12 +1263,13 @@
             });
         }
 
-        function updateMasterCheckBoxState() {
-            const checkboxes = document.querySelectorAll('#foodGrid input[type="checkbox"]');
-            const masterBox = document.getElementById('masterSelectCheckBox');
-            if (!masterBox || checkboxes.length === 0) return;
+        function updateMasterCheckBoxState(dayIdx) {
+            const grid = document.getElementById(`foodGrid_${dayIdx}`);
+            const masterBox = document.getElementById(`masterSelectCheckBox_${dayIdx}`);
+            if (!grid || !masterBox) return;
 
-            const allChecked = Array.from(checkboxes).length > 0 && Array.from(checkboxes).every(cb => cb.checked);
+            const checkboxes = grid.querySelectorAll('input[type="checkbox"]');
+            const allChecked = checkboxes.length > 0 && Array.from(checkboxes).every(cb => cb.checked);
             if (allChecked) {
                 masterBox.classList.add('checked');
             } else {
@@ -1255,11 +1277,10 @@
             }
         }
 
-        // DYNAMIC OPACITY & COLOR ENGINE (1:1 PERCENTAGE TO OPACITY SCALING)
+        // DYNAMIC OPACITY & COLOR ENGINE
         function getDynamicBarColor(id, pct) {
             const isCeiling = ceilingNutrients.includes(id);
 
-            // Ceiling Nutrient Exceeds Limit (> 100%) -> Red Warning
             if (isCeiling && pct > 100) {
                 return {
                     barColor: 'rgba(234, 67, 53, 1)',
@@ -1269,16 +1290,15 @@
                 };
             }
 
-            let baseRgb = "52, 168, 83"; // Standard Leaf Green #34a853
+            let baseRgb = "52, 168, 83";
 
             const fattyAcids = ['sfa', 'unsat', 'mufa', 'pufa', 'ala', 'epa', 'dha', 'o6'];
             if (fattyAcids.includes(id)) {
-                baseRgb = "255, 213, 0"; // Fatty Acids Golden Yellow #ffd500
+                baseRgb = "255, 213, 0";
             } else if (id === 'bCarotene') {
-                baseRgb = "255, 122, 0"; // Beta-Carotene Orange #ff7a00
+                baseRgb = "255, 122, 0";
             }
 
-            // Opacity scales 1:1 with percentage (33% = 0.33 opacity, 100% = 1.0 solid)
             let alpha = Math.min(Math.max(pct / 100, 0), 1);
 
             return {
@@ -1291,27 +1311,29 @@
 
         function recalculateTotals() {
             const todayItems = weeklyMenu[currentSelectedDay] || [];
-            const checkboxes = document.querySelectorAll('#foodGrid input[type="checkbox"]');
+            const grid = document.getElementById(`foodGrid_${currentSelectedDay}`);
 
             let totals = {};
             Object.keys(targets).forEach(k => totals[k] = 0);
 
-            checkboxes.forEach((cb, idx) => {
-                if (cb.checked) {
-                    const itemObj = todayItems[idx];
-                    const data = foodMasterDB[itemObj.key];
-                    if (data) {
-                        Object.keys(totals).forEach(k => {
-                            if (data[k] !== undefined) totals[k] += data[k];
-                        });
+            if (grid) {
+                const checkboxes = grid.querySelectorAll('input[type="checkbox"]');
+                checkboxes.forEach((cb, idx) => {
+                    if (cb.checked) {
+                        const itemObj = todayItems[idx];
+                        const data = foodMasterDB[itemObj.key];
+                        if (data) {
+                            Object.keys(totals).forEach(k => {
+                                if (data[k] !== undefined) totals[k] += data[k];
+                            });
+                        }
                     }
-                }
-            });
+                });
+            }
 
-            // Update master checkbox UI
-            updateMasterCheckBoxState();
+            updateMasterCheckBoxState(currentSelectedDay);
 
-            // CAPSULE 1 (Macronutrients & energy)
+            // CAPSULE 1
             updateBar('cal', totals.cal, targets.cal, 'kcal');
             updateBar('protein', totals.pro, targets.pro, 'gms');
             updateBar('fiber', totals.fiber, targets.fiber, 'gms');
@@ -1320,7 +1342,7 @@
             updateBar('sugars', totals.sug, targets.sug, 'gms', '< ');
             updateBar('lactose', totals.lac, targets.lac, 'gms', '< ');
 
-            // CAPSULE 2 (Fatty acid profile & lipids)
+            // CAPSULE 2
             updateBar('sfa', totals.sfa, targets.sfa, 'gms');
             updateBar('unsat', totals.unsat, targets.unsat, 'gms');
             updateBar('mufa', totals.mufa, targets.mufa, 'gms');
@@ -1330,11 +1352,11 @@
             updateBar('dha', totals.dha, targets.dha, 'gms');
             updateBar('o6', totals.o6, targets.o6, 'gms');
 
-            // CAPSULE 3 (Carotenoids)
+            // CAPSULE 3
             updateBar('bCarotene', totals.bCar, targets.bCar, 'mcg');
             updateBar('aCarotene', totals.aCar, targets.aCar, 'mcg', '', true);
 
-            // CAPSULE 4 (Vitamins)
+            // CAPSULE 4
             updateBar('vitA', totals.vitA, targets.vitA, 'mcg');
             updateBar('vitB1', totals.vitB1, targets.vitB1, 'mg');
             updateBar('vitB2', totals.vitB2, targets.vitB2, 'mg');
@@ -1349,7 +1371,7 @@
             updateBar('vitE', totals.vitE, targets.vitE, 'mg');
             updateBar('vitK', totals.vitK, targets.vitK, 'mcg');
 
-            // CAPSULE 5 (Macro minerals)
+            // CAPSULE 5
             updateBar('calcium', totals.ca, targets.ca, 'mg');
             updateBar('p', totals.p, targets.p, 'mg');
             updateBar('mg', totals.mg, targets.mg, 'mg');
@@ -1358,7 +1380,7 @@
             updateBar('cl', totals.cl, targets.cl, 'mg');
             updateBar('s', totals.s, targets.s, 'mg');
 
-            // CAPSULE 6 (Trace minerals)
+            // CAPSULE 6
             updateBar('iron', totals.fe, targets.fe, 'mg');
             updateBar('zinc', totals.zn, targets.zn, 'mg');
             updateBar('iodine', totals.iodine, targets.iodine, 'mcg');
@@ -1393,12 +1415,10 @@
 
             const visualStyle = getDynamicBarColor(id, rawPct);
 
-            // Save recalculation values in store
             nutrientStateStore[id] = { val, target, pct, rawPct, visualStyle, isAlphaCarotene };
 
             const capsuleParent = badgeEl.closest('.observer-capsule');
 
-            // If capsule was already animated during this checklist state, update live without re-cascading
             if (capsuleParent && animatedCapsules.has(capsuleParent)) {
                 applySingleBarAnimation(id);
             }
@@ -1443,14 +1463,12 @@
             } else {
                 barEl.style.backgroundColor = state.visualStyle.barColor;
 
-                // CEILING LIMIT EXCEEDED (> 100%) -> WARNING DANGER ICON
                 if (state.visualStyle.isWarning) {
                     barEl.style.transform = 'scaleX(1)';
                     badgeEl.classList.remove('completed-badge');
                     badgeEl.classList.add('warning-badge');
                     txtSpan.innerText = `${state.rawPct}%`;
                 } 
-                // STANDARD GOAL COMPLETED (100%) -> CHECKMARK ICON
                 else if (state.pct >= 100) {
                     barEl.style.transform = 'scaleX(1)';
                     badgeEl.classList.remove('warning-badge');
@@ -1459,7 +1477,6 @@
                     badgeEl.style.color = '#ffffff';
                     txtSpan.innerText = '100%';
                 } 
-                // PROGRESSING (0% - 99%) -> GPU TRANSFORM SCALEX
                 else {
                     barEl.style.transform = `scaleX(${state.pct / 100})`;
                     badgeEl.classList.remove('completed-badge', 'warning-badge');
@@ -1470,7 +1487,6 @@
             }
         }
 
-        // FAST STAGGERED CASCADING ANIMATION ENGINE FOR A CAPSULE
         function animateCapsuleCascade(capsule) {
             if (animatedCapsules.has(capsule)) return;
             animatedCapsules.add(capsule);
@@ -1484,7 +1500,6 @@
             });
         }
 
-        // RESET ENGINE: CLEARS ANIMATION LOCK SO CAPSULES RE-CASCADE ON SCROLL OR IMMEDIATELY IF IN VIEW
         function resetAnimationState() {
             animatedCapsules.clear();
 
@@ -1497,7 +1512,6 @@
                 if (is50PercentVisible) {
                     animateCapsuleCascade(capsule);
                 } else {
-                    // Reset off-screen capsule bars instantly to 0% so they are primed to cascade on scroll
                     const badges = capsule.querySelectorAll('.macro-badge');
                     badges.forEach(badge => {
                         const id = badge.id.replace('Badge', '');
@@ -1519,9 +1533,8 @@
                         }
                     });
 
-                    capsule.offsetHeight; // Force DOM reflow to instantly apply 0% transform
+                    capsule.offsetHeight;
 
-                    // Re-enable smooth transition
                     badges.forEach(badge => {
                         const id = badge.id.replace('Badge', '');
                         const barEl = document.getElementById(`${id}Bar`);
@@ -1533,7 +1546,6 @@
             });
         }
 
-        // VIEWPORT OBSERVER: TRIGGERS AUTOMATICALLY AS SOON AS 50% OF CAPSULE BECOMES VISIBLE
         const observerOptions = {
             root: null,
             rootMargin: '0px',
@@ -1596,7 +1608,7 @@
             container.innerHTML = htmlMarkup;
         })();
 
-        // HEADER SKYFALL SEARCH & SMOOTH PALETTE ENGINE
+        // HEADER SKYFALL SEARCH & PALETTE ENGINE
         const toggleBtn = document.getElementById('themeToggleBtn');
         const bodyElement = document.body;
         const systemLightQuery = window.matchMedia('(prefers-color-scheme: light)');
@@ -1635,7 +1647,7 @@
             }
             recalculateTotals();
             const activePill = document.querySelector('.day-pill.active');
-            if (activePill) updateDayLine(activePill);
+            if (activePill) updateDayLine(activePill, 0);
         });
 
         toggleBtn.addEventListener('click', (e) => {
@@ -1650,7 +1662,7 @@
             }
             recalculateTotals();
             const activePill = document.querySelector('.day-pill.active');
-            if (activePill) updateDayLine(activePill);
+            if (activePill) updateDayLine(activePill, 0);
         });
 
         openSearchBtn.addEventListener('click', () => {
@@ -1676,7 +1688,7 @@
             }
         });
 
-        // UNIVERSAL FLUID WAVE ANIMATION ENGINE FOR NAV LINKS & LOGO
+        // UNIVERSAL FLUID WAVE ANIMATION ENGINE
         const universalTargetLinks = document.querySelectorAll('.breadcrumbs a, .footer-links-row a, .logo');
 
         universalTargetLinks.forEach(link => {
@@ -1709,7 +1721,7 @@
 
         window.addEventListener('resize', () => {
             const activePill = document.querySelector('.day-pill.active');
-            if (activePill) updateDayLine(activePill);
+            if (activePill) updateDayLine(activePill, 0);
         });
 
         window.addEventListener('pageshow', () => {
@@ -1730,8 +1742,9 @@
             });
         });
 
-        // INIT PAGE ALWAYS DEFAULTED TO SUNDAY (INITIAL LOAD WITHOUT SLIDE)
-        renderDay(currentSelectedDay, true);
+        // INITIALIZE ALL 7 DAY CAPSULES AND START ON SUNDAY
+        initDaysTrack();
+        selectDay(0, true);
     </script>
 </body>
 </html>
