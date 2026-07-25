@@ -477,12 +477,12 @@
             height: 22px;
             position: relative;
             overflow: hidden;
-            transition: background-color 0.45s var(--ease-smooth), 
-                        color 0.45s var(--ease-smooth), 
-                        min-width 0.45s var(--ease-smooth),
-                        width 0.45s var(--ease-smooth),
-                        padding 0.45s var(--ease-smooth),
-                        border-radius 0.45s var(--ease-smooth);
+            transition: background-color 0.35s var(--ease-smooth), 
+                        color 0.35s var(--ease-smooth), 
+                        min-width 0.35s var(--ease-smooth),
+                        width 0.35s var(--ease-smooth),
+                        padding 0.35s var(--ease-smooth),
+                        border-radius 0.35s var(--ease-smooth);
         }
 
         /* PERCENTAGE TEXT: WIPES LEFT-TO-RIGHT ON ENTRY, WIPES BACK RIGHT-TO-LEFT ON EXIT */
@@ -493,10 +493,10 @@
             transform: scale(1);
             max-width: 50px;
             clip-path: inset(0 0 0 0);
-            transition: opacity 0.3s var(--ease-smooth),
-                        transform 0.45s var(--ease-smooth),
-                        max-width 0.45s var(--ease-smooth),
-                        clip-path 0.45s var(--ease-smooth);
+            transition: opacity 0.25s var(--ease-smooth),
+                        transform 0.35s var(--ease-smooth),
+                        max-width 0.35s var(--ease-smooth),
+                        clip-path 0.35s var(--ease-smooth);
         }
 
         /* TICK SVG: APPEARS SMOOTHLY ON ENTRY, CONTRACTS ON EXIT */
@@ -510,9 +510,9 @@
             stroke-linejoin: round;
             opacity: 0;
             transform: scale(0);
-            transition: opacity 0.3s var(--ease-smooth),
-                        transform 0.45s var(--ease-smooth),
-                        width 0.45s var(--ease-smooth);
+            transition: opacity 0.25s var(--ease-smooth),
+                        transform 0.35s var(--ease-smooth),
+                        width 0.35s var(--ease-smooth);
             flex-shrink: 0;
         }
 
@@ -547,12 +547,12 @@
             transition: background-color 0.8s var(--ease-smooth);
         }
 
-        /* SMOOTH FILL ANIMATION PACE */
+        /* SMOOTH 0.8s NATURAL FILL ANIMATION */
         .progress-fill {
             height: 100%;
             border-radius: 10px;
             width: 0%;
-            transition: width 1.1s var(--ease-smooth), background-color 0.5s var(--ease-smooth);
+            transition: width 0.8s var(--ease-smooth), background-color 0.4s var(--ease-smooth);
         }
 
         /* FOOTER */
@@ -998,11 +998,9 @@
         // DEFAULT ALWAYS INITIALIZES TO SUNDAY ON REFRESH
         let currentSelectedDay = 0;
 
-        // STATE STORE & ONE-TIME ENTRANCE ANIMATION TRACKER
+        // STATE STORE & ONE-TIME CASCADING ANIMATION TRACKER
         const nutrientStateStore = {};
-        const visibleCapsules = new Set();
         const animatedCapsules = new Set();
-        let scrollStopTimer = null;
 
         // LOCALSTORAGE PERSISTENCE ENGINE
         function saveChecklistState() {
@@ -1260,18 +1258,18 @@
 
             const barColor = getBarColor(id, pct);
 
-            // Store State
+            // Store recalculation state immediately in background
             nutrientStateStore[id] = { val, target, pct, barColor, isAlphaCarotene };
 
             const capsuleParent = badgeEl.closest('.observer-capsule');
 
-            // If this capsule has already had its entrance animation, update its bar live smoothly
+            // If this capsule has already performed its entrance cascade animation, update its bars live smoothly
             if (capsuleParent && animatedCapsules.has(capsuleParent)) {
-                applyBarAnimation(id, false);
+                applySingleBarAnimation(id);
             }
         }
 
-        function applyBarAnimation(id, instant = false) {
+        function applySingleBarAnimation(id) {
             const state = nutrientStateStore[id];
             if (!state) return;
 
@@ -1287,11 +1285,6 @@
                 badgeEl.innerHTML = `<span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
                 txtSpan = badgeEl.querySelector('.badge-txt-span');
                 tickSvg = badgeEl.querySelector('.badge-tick-svg');
-            }
-
-            if (instant) {
-                barEl.style.transition = 'none';
-                badgeEl.style.transition = 'none';
             }
 
             if (state.isAlphaCarotene) {
@@ -1326,39 +1319,39 @@
                     txtSpan.innerText = `${state.pct}%`;
                 }
             }
-
-            if (instant) {
-                barEl.offsetHeight; // Force DOM reflow
-                badgeEl.offsetHeight;
-                barEl.style.transition = '';
-                badgeEl.style.transition = '';
-            }
         }
 
-        // VIEWPORT SCROLL & SCROLL-STOP DETECTION ENGINE
+        // FAST STAGGERED CASCADING ANIMATION ENGINE FOR A CAPSULE
+        function animateCapsuleCascade(capsule) {
+            if (animatedCapsules.has(capsule)) return;
+            animatedCapsules.add(capsule);
+
+            const badges = capsule.querySelectorAll('.macro-badge');
+            badges.forEach((badge, index) => {
+                const id = badge.id.replace('Badge', '');
+                // Stagger each item by 50ms from top to bottom
+                setTimeout(() => {
+                    applySingleBarAnimation(id);
+                }, index * 50);
+            });
+        }
+
+        // VIEWPORT OBSERVER: TRIGGERS AS SOON AS 60% OF CAPSULE IS VISIBLE
         const observerOptions = {
             root: null,
-            rootMargin: '0px 0px -50px 0px',
-            threshold: 0.10
+            rootMargin: '0px',
+            threshold: 0.60
         };
 
         const capsuleObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
+            // Sort intersecting entries vertically so upper visible capsules animate first
+            const visibleEntries = entries.filter(e => e.isIntersecting);
+            visibleEntries.sort((a, b) => a.target.getBoundingClientRect().top - b.target.getBoundingClientRect().top);
+
+            visibleEntries.forEach(entry => {
                 const capsule = entry.target;
-                if (entry.isIntersecting) {
-                    visibleCapsules.add(capsule);
-                    capsule.dataset.wasVisible = 'true';
-                } else {
-                    visibleCapsules.delete(capsule);
-                    // Fast-scrolled past without stopping: fill instantly so data is ready if returned to later
-                    if (capsule.dataset.wasVisible === 'true' && !animatedCapsules.has(capsule)) {
-                        animatedCapsules.add(capsule);
-                        const badges = capsule.querySelectorAll('.macro-badge');
-                        badges.forEach(badge => {
-                            const id = badge.id.replace('Badge', '');
-                            applyBarAnimation(id, true); // instant fill
-                        });
-                    }
+                if (!animatedCapsules.has(capsule)) {
+                    animateCapsuleCascade(capsule);
                 }
             });
         }, observerOptions);
@@ -1366,28 +1359,6 @@
         document.querySelectorAll('.observer-capsule').forEach(capsule => {
             capsuleObserver.observe(capsule);
         });
-
-        // Trigger smooth entrance animation ONCE when screen stops scrolling to read
-        function triggerScrollStopAnimations() {
-            visibleCapsules.forEach(capsule => {
-                if (!animatedCapsules.has(capsule)) {
-                    animatedCapsules.add(capsule);
-                    const badges = capsule.querySelectorAll('.macro-badge');
-                    badges.forEach(badge => {
-                        const id = badge.id.replace('Badge', '');
-                        applyBarAnimation(id, false); // smooth animated entrance!
-                    });
-                }
-            });
-        }
-
-        // Detect screen scroll pause (250ms idle)
-        window.addEventListener('scroll', () => {
-            clearTimeout(scrollStopTimer);
-            scrollStopTimer = setTimeout(() => {
-                triggerScrollStopAnimations();
-            }, 250);
-        }, { passive: true });
 
         // BREADCRUMB BUILDER
         (function buildDynamicBreadcrumbs() {
@@ -1565,11 +1536,6 @@
 
         // INIT PAGE ALWAYS DEFAULTED TO SUNDAY
         renderDay(currentSelectedDay);
-
-        // Initial trigger for top visible capsule after landing load
-        setTimeout(() => {
-            triggerScrollStopAnimations();
-        }, 300);
     </script>
 </body>
 </html>
