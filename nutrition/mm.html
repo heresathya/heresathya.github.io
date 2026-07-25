@@ -373,20 +373,31 @@
             filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25));
         }
 
-        /* COLUMN-BASED LAYOUT ENGINE */
-        .food-checklist-grid, .macros-grid {
-            column-count: 2;
-            column-gap: 32px;
+        /* RIGID 2-COLUMN CSS GRID PREVENTS SHUFFLING & JUMPING */
+        .food-checklist-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-auto-flow: column;
+            grid-template-rows: repeat(7, auto);
+            gap: 16px 32px;
             width: 100%;
         }
 
-        .food-item-checkbox, .macro-card {
-            break-inside: avoid;
-            page-break-inside: avoid;
-            margin-bottom: 20px;
-            display: block;
+        .macros-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-auto-flow: column;
+            gap: 20px 32px;
             width: 100%;
         }
+
+        /* STRICT ROW COUNTS FOR DESKTOP TOP-TO-BOTTOM COLUMN FILL */
+        #macroGrid { grid-template-rows: repeat(4, auto); }       /* 7 items -> 4 left, 3 right */
+        #fatsGrid { grid-template-rows: repeat(4, auto); }        /* 8 items -> 4 left, 4 right */
+        #carotenoidsGrid { grid-template-rows: repeat(1, auto); } /* 2 items -> 1 left, 1 right */
+        #vitaminsGrid { grid-template-rows: repeat(7, auto); }    /* 13 items -> 7 left, 6 right */
+        #macroMineralsGrid { grid-template-rows: repeat(4, auto); }/* 7 items -> 4 left, 3 right */
+        #traceMineralsGrid { grid-template-rows: repeat(5, auto); }/* 9 items -> 5 left, 4 right */
 
         .food-item-checkbox {
             display: flex;
@@ -399,6 +410,7 @@
             cursor: pointer;
             user-select: none;
             transition: background-color 0.8s var(--ease-smooth), border-color 0.8s var(--ease-smooth);
+            width: 100%;
         }
 
         .food-item-checkbox:hover { border-color: var(--panel-border); }
@@ -435,14 +447,18 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
+            width: 100%;
         }
 
+        /* FIXED HEIGHT PREVENTS TITLE SHAKING / GOING UP */
         .macro-top-label {
             display: flex;
             justify-content: space-between;
             align-items: center;
             font-size: 14px;
             font-weight: 500;
+            height: 28px;
+            line-height: 1;
         }
 
         .macro-val { color: var(--text-muted); font-size: 13px; transition: color 0.8s var(--ease-smooth); }
@@ -455,39 +471,30 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.4s var(--ease-smooth);
+            flex-shrink: 0;
+            transition: background-color 0.4s var(--ease-smooth), color 0.4s var(--ease-smooth), transform 0.3s var(--ease-smooth), opacity 0.3s var(--ease-smooth);
         }
 
-        /* PROMINENT 34px COMPLETED TICK BADGE ENGINE */
+        /* 100% COMPLETED SVG TICK BADGE */
         .macro-badge.completed-badge {
-            width: 34px !important;
-            height: 34px !important;
+            width: 22px !important;
+            height: 22px !important;
             border-radius: 50% !important;
             padding: 0 !important;
             display: inline-flex !important;
             align-items: center !important;
             justify-content: center !important;
-            flex-shrink: 0;
-            background: transparent !important;
+            transform: scale(1.05);
         }
 
-        .macro-badge.completed-badge img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            display: block;
-            transform: scale(1.15);
-        }
-
-        /* TINTED TICK MASK FOR FATS & CAROTENOIDS */
-        .macro-badge.completed-badge.tinted-tick-mask {
-            -webkit-mask-size: contain;
-            mask-size: contain;
-            -webkit-mask-repeat: no-repeat;
-            mask-repeat: no-repeat;
-            -webkit-mask-position: center;
-            mask-position: center;
-            transform: scale(1.15);
+        .macro-badge.completed-badge svg {
+            width: 13px;
+            height: 13px;
+            stroke: #ffffff;
+            stroke-width: 3.5;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
         }
 
         .progress-track {
@@ -543,9 +550,13 @@
             will-change: background-position;
         }
 
-        /* PHONES & IPADS RENDER SINGLE COLUMN */
+        /* PHONES & IPADS RENDER STRICT SINGLE COLUMN */
         @media (max-width: 1024px) {
-            .food-checklist-grid, .macros-grid { column-count: 1; }
+            .food-checklist-grid, .macros-grid {
+                grid-template-columns: 1fr !important;
+                grid-auto-flow: row !important;
+                grid-template-rows: none !important;
+            }
         }
 
         @media (max-width: 700px) {
@@ -626,7 +637,7 @@
             <div class="day-active-line" id="dayActiveLine"></div>
         </div>
 
-        <!-- TODAY WITH MASTER CHECKBOX MOVED TO RIGHT SIDE -->
+        <!-- TODAY WITH MASTER CHECKBOX ON RIGHT SIDE -->
         <div class="wide-capsule">
             <div class="capsule-header-row">
                 <h2 class="capsule-title">
@@ -651,7 +662,7 @@
                          Macronutrients & energy
                 </h2>
             </div>
-            <div class="macros-grid">
+            <div class="macros-grid" id="macroGrid">
                 <div class="macro-card"><div class="macro-top-label"><span>Calories</span><span class="macro-badge" id="calBadge">0%</span></div><div class="macro-val" id="calVal">0 / 2200 kcal</div><div class="progress-track"><div class="progress-fill" id="calBar"></div></div></div>
                 <div class="macro-card"><div class="macro-top-label"><span>Protein</span><span class="macro-badge" id="proteinBadge">0%</span></div><div class="macro-val" id="proteinVal">0 gms / 100 gms</div><div class="progress-track"><div class="progress-fill" id="proteinBar"></div></div></div>
                 <div class="macro-card"><div class="macro-top-label"><span>Fiber</span><span class="macro-badge" id="fiberBadge">0%</span></div><div class="macro-val" id="fiberVal">0 gms / 40 gms</div><div class="progress-track"><div class="progress-fill" id="fiberBar"></div></div></div>
@@ -672,7 +683,7 @@
                     Fatty acid profile & lipids
                 </h2>
             </div>
-            <div class="macros-grid">
+            <div class="macros-grid" id="fatsGrid">
                 <div class="macro-card"><div class="macro-top-label"><span>Saturated Fat (SFA)</span><span class="macro-badge" id="sfaBadge">0%</span></div><div class="macro-val" id="sfaVal">0 gms / 20 gms</div><div class="progress-track"><div class="progress-fill" id="sfaBar"></div></div></div>
                 <div class="macro-card"><div class="macro-top-label"><span>Unsaturated Fat</span><span class="macro-badge" id="unsatBadge">0%</span></div><div class="macro-val" id="unsatVal">0 gms / 50 gms</div><div class="progress-track"><div class="progress-fill" id="unsatBar"></div></div></div>
                 <div class="macro-card"><div class="macro-top-label"><span>Monounsaturated (MUFA)</span><span class="macro-badge" id="mufaBadge">0%</span></div><div class="macro-val" id="mufaVal">0 gms / 30 gms</div><div class="progress-track"><div class="progress-fill" id="mufaBar"></div></div></div>
@@ -694,7 +705,7 @@
                         Carotenoids
                 </h2>
             </div>
-            <div class="macros-grid">
+            <div class="macros-grid" id="carotenoidsGrid">
                 <div class="macro-card"><div class="macro-top-label"><span>Beta-Carotene</span><span class="macro-badge" id="bCaroteneBadge">0%</span></div><div class="macro-val" id="bCaroteneVal">0 mcg / 4800 mcg</div><div class="progress-track"><div class="progress-fill" id="bCaroteneBar"></div></div></div>
                 <div class="macro-card"><div class="macro-top-label"><span>Alpha-Carotene</span><span class="macro-badge" id="aCaroteneBadge">0%</span></div><div class="macro-val" id="aCaroteneVal">0 mcg / N/A</div><div class="progress-track"><div class="progress-fill" id="aCaroteneBar"></div></div></div>
             </div>
@@ -710,7 +721,7 @@
                     Vitamins
                 </h2>
             </div>
-            <div class="macros-grid">
+            <div class="macros-grid" id="vitaminsGrid">
                 <div class="macro-card"><div class="macro-top-label"><span>Vitamin A</span><span class="macro-badge" id="vitABadge">0%</span></div><div class="macro-val" id="vitAVal">0 mcg / 900 mcg</div><div class="progress-track"><div class="progress-fill" id="vitABar"></div></div></div>
                 <div class="macro-card"><div class="macro-top-label"><span>Vitamin B1 (Thiamine)</span><span class="macro-badge" id="vitB1Badge">0%</span></div><div class="macro-val" id="vitB1Val">0 mg / 1.2 mg</div><div class="progress-track"><div class="progress-fill" id="vitB1Bar"></div></div></div>
                 <div class="macro-card"><div class="macro-top-label"><span>Vitamin B2 (Riboflavin)</span><span class="macro-badge" id="vitB2Badge">0%</span></div><div class="macro-val" id="vitB2Val">0 mg / 1.3 mg</div><div class="progress-track"><div class="progress-fill" id="vitB2Bar"></div></div></div>
@@ -737,7 +748,7 @@
                     Macro minerals
                 </h2>
             </div>
-            <div class="macros-grid">
+            <div class="macros-grid" id="macroMineralsGrid">
                 <div class="macro-card"><div class="macro-top-label"><span>Calcium</span><span class="macro-badge" id="calciumBadge">0%</span></div><div class="macro-val" id="calciumVal">0 mg / 1000 mg</div><div class="progress-track"><div class="progress-fill" id="calciumBar"></div></div></div>
                 <div class="macro-card"><div class="macro-top-label"><span>Phosphorus</span><span class="macro-badge" id="pBadge">0%</span></div><div class="macro-val" id="pVal">0 mg / 700 mg</div><div class="progress-track"><div class="progress-fill" id="pBar"></div></div></div>
                 <div class="macro-card"><div class="macro-top-label"><span>Magnesium</span><span class="macro-badge" id="mgBadge">0%</span></div><div class="macro-val" id="mgVal">0 mg / 420 mg</div><div class="progress-track"><div class="progress-fill" id="mgBar"></div></div></div>
@@ -758,7 +769,7 @@
                     Trace minerals
                 </h2>
             </div>
-            <div class="macros-grid">
+            <div class="macros-grid" id="traceMineralsGrid">
                 <div class="macro-card"><div class="macro-top-label"><span>Iron</span><span class="macro-badge" id="ironBadge">0%</span></div><div class="macro-val" id="ironVal">0 mg / 8 mg</div><div class="progress-track"><div class="progress-fill" id="ironBar"></div></div></div>
                 <div class="macro-card"><div class="macro-top-label"><span>Zinc</span><span class="macro-badge" id="zincBadge">0%</span></div><div class="macro-val" id="zincVal">0 mg / 11 mg</div><div class="progress-track"><div class="progress-fill" id="zincBar"></div></div></div>
                 <div class="macro-card"><div class="macro-top-label"><span>Iodine</span><span class="macro-badge" id="iodineBadge">0%</span></div><div class="macro-val" id="iodineVal">0 mcg / 150 mcg</div><div class="progress-track"><div class="progress-fill" id="iodineBar"></div></div></div>
@@ -786,12 +797,6 @@
     </footer>
 
     <script>
-        // ACCEPT TICK IMAGE URL
-        const ACCEPT_TICK_URL = "images/tick.png";
-
-        // EXCLUDED FROM FULL GREEN IMAGE TICK (USES RECOLORED TINTED TICK MASK MATCHING TRACKING BAR COLOR)
-        const excludedFromGreenImageTick = ['sfa', 'unsat', 'mufa', 'pufa', 'ala', 'epa', 'dha', 'o6', 'bCarotene', 'aCarotene'];
-
         // MASTER 23 FOOD DATABASE
         const foodMasterDB = {
             'Chickpeas': { cal: 378, pro: 20.5, fiber: 12.2, carb: 63.0, fat: 6.07, sug: 10.7, lac: 0, sfa: 0.60, unsat: 5.47, mufa: 1.36, pufa: 4.11, ala: 0.11, epa: 0, dha: 0, o6: 4.00, bCar: 40, aCar: 0, vitA: 3, vitB1: 0.48, vitB2: 0.21, vitB3: 1.54, vitB5: 1.60, vitB6: 0.54, vitB7: 10, vitB9: 557, vitB12: 0, vitC: 4.0, vitD: 0, vitE: 0.82, vitK: 9.0, ca: 105, p: 366, mg: 115, na: 24, k: 875, cl: 10, s: 180, fe: 6.2, zn: 3.4, iodine: 0, mn: 2.2, se: 8.2, cu: 850, f: 0, cr: 0, mo: 45 },
@@ -939,7 +944,9 @@
         };
 
         const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-        let currentSelectedDay = new Date().getDay();
+        
+        // DEFAULT ALWAYS INITIALIZES TO SUNDAY ON REFRESH
+        let currentSelectedDay = 0;
 
         // SLIDING UNDERLINE ENGINE WITH SCROLL OFFSET FIX
         function updateDayLine(activePill) {
@@ -1155,8 +1162,6 @@
 
             if (!valEl || !barEl || !badgeEl) return;
 
-            const isExcludedFromGreenImage = excludedFromGreenImageTick.includes(id);
-
             // SPECIAL ALPHA-CAROTENE N/A HANDLING
             if (isAlphaCarotene) {
                 const formattedVal = val.toFixed(val % 1 ? (val < 1 ? 2 : 1) : 0);
@@ -1164,11 +1169,10 @@
                 if (val > 0) {
                     barEl.style.width = '100%';
                     barEl.style.backgroundColor = '#34a853';
-                    badgeEl.className = 'macro-badge completed-badge tinted-tick-mask';
+                    badgeEl.className = 'macro-badge completed-badge';
                     badgeEl.style.backgroundColor = '#34a853';
-                    badgeEl.style.webkitMaskImage = `url('${ACCEPT_TICK_URL}')`;
-                    badgeEl.style.maskImage = `url('${ACCEPT_TICK_URL}')`;
-                    badgeEl.innerHTML = '';
+                    badgeEl.style.color = '#ffffff';
+                    badgeEl.innerHTML = `<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
                 } else {
                     barEl.style.width = '0%';
                     barEl.style.backgroundColor = '#34a853';
@@ -1176,8 +1180,6 @@
                     badgeEl.style.backgroundColor = hexToRgba('#34a853', 0.15);
                     badgeEl.style.color = '#34a853';
                     badgeEl.style.padding = '2px 8px';
-                    badgeEl.style.webkitMaskImage = 'none';
-                    badgeEl.style.maskImage = 'none';
                     badgeEl.innerText = '0%';
                 }
                 return;
@@ -1192,29 +1194,16 @@
 
             if (pct >= 100) {
                 barEl.style.width = '100%';
-                if (isExcludedFromGreenImage) {
-                    // Fats & Carotenoids: Use tick.png tinted to their specific tracking bar color
-                    badgeEl.className = 'macro-badge completed-badge tinted-tick-mask';
-                    badgeEl.style.backgroundColor = barColor;
-                    badgeEl.style.webkitMaskImage = `url('${ACCEPT_TICK_URL}')`;
-                    badgeEl.style.maskImage = `url('${ACCEPT_TICK_URL}')`;
-                    badgeEl.innerHTML = '';
-                } else {
-                    // All other capsules: Use full original green 3D image tick
-                    badgeEl.className = 'macro-badge completed-badge';
-                    badgeEl.style.backgroundColor = 'transparent';
-                    badgeEl.style.webkitMaskImage = 'none';
-                    badgeEl.style.maskImage = 'none';
-                    badgeEl.innerHTML = `<img src="${ACCEPT_TICK_URL}" alt="Complete">`;
-                }
+                badgeEl.className = 'macro-badge completed-badge';
+                badgeEl.style.backgroundColor = barColor;
+                badgeEl.style.color = '#ffffff';
+                badgeEl.innerHTML = `<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
             } else {
                 barEl.style.width = `${pct}%`;
                 badgeEl.className = 'macro-badge';
                 badgeEl.style.backgroundColor = hexToRgba(barColor, 0.15);
                 badgeEl.style.color = barColor;
                 badgeEl.style.padding = '2px 8px';
-                badgeEl.style.webkitMaskImage = 'none';
-                badgeEl.style.maskImage = 'none';
                 badgeEl.innerText = `${pct}%`;
             }
         }
@@ -1393,7 +1382,7 @@
             });
         });
 
-        // Init Page
+        // INIT PAGE ALWAYS DEFAULTED TO SUNDAY
         renderDay(currentSelectedDay);
     </script>
 </body>
