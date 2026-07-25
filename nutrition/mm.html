@@ -1246,7 +1246,6 @@
 
             if (!valEl || !barEl || !badgeEl) return;
 
-            // Compute math & textual representation immediately
             let pct = 0;
             let formattedVal = 0;
 
@@ -1266,7 +1265,7 @@
 
             const capsuleParent = badgeEl.closest('.observer-capsule');
 
-            // If capsule has already performed its entrance animation, update its bar smoothly live
+            // If this capsule has already had its entrance animation, update its bar live smoothly
             if (capsuleParent && animatedCapsules.has(capsuleParent)) {
                 applyBarAnimation(id, false);
             }
@@ -1339,8 +1338,8 @@
         // VIEWPORT SCROLL & SCROLL-STOP DETECTION ENGINE
         const observerOptions = {
             root: null,
-            rootMargin: '0px 0px -80px 0px',
-            threshold: 0.15
+            rootMargin: '0px 0px -50px 0px',
+            threshold: 0.10
         };
 
         const capsuleObserver = new IntersectionObserver((entries) => {
@@ -1348,10 +1347,11 @@
                 const capsule = entry.target;
                 if (entry.isIntersecting) {
                     visibleCapsules.add(capsule);
+                    capsule.dataset.wasVisible = 'true';
                 } else {
                     visibleCapsules.delete(capsule);
-                    // Fast-scrolled past without stopping: auto-fill instantly so data stays ready
-                    if (!animatedCapsules.has(capsule)) {
+                    // Fast-scrolled past without stopping: fill instantly so data is ready if returned to later
+                    if (capsule.dataset.wasVisible === 'true' && !animatedCapsules.has(capsule)) {
                         animatedCapsules.add(capsule);
                         const badges = capsule.querySelectorAll('.macro-badge');
                         badges.forEach(badge => {
@@ -1375,18 +1375,18 @@
                     const badges = capsule.querySelectorAll('.macro-badge');
                     badges.forEach(badge => {
                         const id = badge.id.replace('Badge', '');
-                        applyBarAnimation(id, false); // smooth animated entrance
+                        applyBarAnimation(id, false); // smooth animated entrance!
                     });
                 }
             });
         }
 
-        // Detect screen scroll pause (200ms idle)
+        // Detect screen scroll pause (250ms idle)
         window.addEventListener('scroll', () => {
             clearTimeout(scrollStopTimer);
             scrollStopTimer = setTimeout(() => {
                 triggerScrollStopAnimations();
-            }, 200);
+            }, 250);
         }, { passive: true });
 
         // BREADCRUMB BUILDER
