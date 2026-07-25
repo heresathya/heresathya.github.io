@@ -62,6 +62,9 @@
             --cascade-distance: 24px;
             --cascade-duration-exit: 0.2s;
             --cascade-duration-entry: 0.28s;
+
+            --slide-exit-dur: 0.24s;
+            --slide-enter-dur: 0.32s;
         }
 
         body.light-mode {
@@ -101,7 +104,7 @@
             margin: 0 auto;
             width: 95%;
             -webkit-font-smoothing: antialiased;
-            overflow-x: hidden; /* PREVENTS HORIZONTAL SCROLLBARS WHILE CARD FLIES OFF-SCREEN */
+            overflow-x: hidden; /* ELIMINATES HORIZONTAL SCROLLBARS WHILE CARDS GLIDE OUTSIDE DEVICE EDGES */
             transition: background-color 0.8s var(--ease-smooth), color 0.8s var(--ease-smooth);
         }
 
@@ -308,14 +311,14 @@
             height: 3px;
             border-radius: 3px;
             background-color: var(--active-line-color);
-            transition: left 0.38s var(--ease-premium), width 0.38s var(--ease-premium), background-color 0.8s var(--ease-smooth);
+            transition: left var(--line-dur, 0.38s) var(--ease-premium), width var(--line-dur, 0.38s) var(--ease-premium), background-color 0.8s var(--ease-smooth);
             z-index: 1;
             pointer-events: none;
         }
 
         .contents-container { display: flex; flex-direction: column; gap: 32px; margin-bottom: 80px; width: 100%; }
 
-        /* CSS GRID STACK WINDOW (NO HEIGHT COLLAPSE / NO LAYOUT JUMP) */
+        /* STABLE CSS GRID STACK (STOPS VERTICAL PAGE JUMPING) */
         .day-stage-wrapper {
             display: grid;
             grid-template-columns: 1fr;
@@ -324,7 +327,7 @@
             position: relative;
         }
 
-        /* CARD SLIDES LOCKED IN SINGLE GRID CELL */
+        /* CARD SLIDES STACKED PERFECTLY ON GRID CELL 1 / 1 */
         .day-card-slide {
             grid-area: 1 / 1;
             width: 100%;
@@ -332,6 +335,8 @@
             pointer-events: none;
             visibility: hidden;
             will-change: transform, opacity;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
         }
 
         .day-card-slide.is-active {
@@ -341,45 +346,45 @@
             transform: translate3d(0, 0, 0);
         }
 
-        /* FULL VIEWPORT (100vw) OFF-SCREEN GLIDE ANIMATIONS */
+        /* GPU HARDWARE ACCELERATED VIEWPORT SLIDE ANIMATIONS */
         @keyframes exitToLeft {
             0% { transform: translate3d(0, 0, 0); opacity: 1; }
-            100% { transform: translate3d(-100vw, 0, 0); opacity: 0; }
+            100% { transform: translate3d(-105vw, 0, 0); opacity: 0; }
         }
 
         @keyframes exitToRight {
             0% { transform: translate3d(0, 0, 0); opacity: 1; }
-            100% { transform: translate3d(100vw, 0, 0); opacity: 0; }
+            100% { transform: translate3d(105vw, 0, 0); opacity: 0; }
         }
 
         @keyframes enterFromRight {
-            0% { transform: translate3d(100vw, 0, 0); opacity: 0; }
+            0% { transform: translate3d(105vw, 0, 0); opacity: 0; }
             100% { transform: translate3d(0, 0, 0); opacity: 1; }
         }
 
         @keyframes enterFromLeft {
-            0% { transform: translate3d(-100vw, 0, 0); opacity: 0; }
+            0% { transform: translate3d(-105vw, 0, 0); opacity: 0; }
             100% { transform: translate3d(0, 0, 0); opacity: 1; }
         }
 
         .slide-exit-left {
-            animation: exitToLeft 0.28s cubic-bezier(0.4, 0, 1, 1) forwards !important;
+            animation: exitToLeft var(--slide-exit-dur, 0.24s) cubic-bezier(0.4, 0, 1, 1) forwards !important;
             visibility: visible !important;
         }
 
         .slide-exit-right {
-            animation: exitToRight 0.28s cubic-bezier(0.4, 0, 1, 1) forwards !important;
+            animation: exitToRight var(--slide-exit-dur, 0.24s) cubic-bezier(0.4, 0, 1, 1) forwards !important;
             visibility: visible !important;
         }
 
         .slide-enter-right {
-            animation: enterFromRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+            animation: enterFromRight var(--slide-enter-dur, 0.32s) cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
             visibility: visible !important;
             pointer-events: auto !important;
         }
 
         .slide-enter-left {
-            animation: enterFromLeft 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+            animation: enterFromLeft var(--slide-enter-dur, 0.32s) cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
             visibility: visible !important;
             pointer-events: auto !important;
         }
@@ -1141,7 +1146,7 @@
             const left = pillRect.left - capsuleRect.left + capsule.scrollLeft;
             const width = pillRect.width;
 
-            line.style.transition = `left ${durationMs}ms var(--ease-premium), width ${durationMs}ms var(--ease-premium), background-color 0.8s var(--ease-smooth)`;
+            document.documentElement.style.setProperty('--line-dur', `${durationMs}ms`);
             line.style.left = `${left}px`;
             line.style.width = `${width}px`;
         }
@@ -1194,14 +1199,14 @@
             }
         }
 
-        // OPTION B DIRECTIONAL MOTION ENGINE (CARD GLIDES COMPLETELY OFF DEVICE SCREEN EDGES)
+        // OPTION B STAGED SEQUENCE ENGINE (DEFERRED RECALCULATION FOR 120 FPS SMOOTHNESS)
         function selectDay(targetDayIdx, isInitial = false) {
             if (isSwitchingDay && !isInitial) return;
             if (targetDayIdx === currentSelectedDay && !isInitial) return;
 
             const previousDayIdx = currentSelectedDay;
             const isGoingRight = targetDayIdx > previousDayIdx;
-            currentSelectedDay = targetDayIdx;
+            const stepCount = Math.abs(targetDayIdx - previousDayIdx);
 
             let activePillEl = null;
             document.querySelectorAll('.day-pill').forEach(pill => {
@@ -1210,19 +1215,20 @@
                 if (isActive) activePillEl = pill;
             });
 
+            const totalLineDuration = isInitial ? 0 : Math.min(380 + (stepCount - 1) * 80, 750);
             if (activePillEl) {
-                updateDayLine(activePillEl, isInitial ? 0 : 380);
+                updateDayLine(activePillEl, totalLineDuration);
             }
 
             const allCards = document.querySelectorAll('.day-card-slide');
-            const oldCard = document.querySelector(`.day-card-slide[data-day-index="${previousDayIdx}"]`);
-            const newCard = document.querySelector(`.day-card-slide[data-day-index="${targetDayIdx}"]`);
+            const targetCard = document.querySelector(`.day-card-slide[data-day-index="${targetDayIdx}"]`);
 
-            if (isInitial || !oldCard || !newCard) {
+            if (isInitial || !targetCard) {
                 allCards.forEach(c => {
                     c.classList.remove('is-active', 'slide-exit-left', 'slide-exit-right', 'slide-enter-left', 'slide-enter-right');
                 });
-                if (newCard) newCard.classList.add('is-active');
+                if (targetCard) targetCard.classList.add('is-active');
+                currentSelectedDay = targetDayIdx;
                 recalculateTotals();
                 resetAnimationState();
                 return;
@@ -1230,35 +1236,87 @@
 
             isSwitchingDay = true;
 
-            // OPTION B DIRECTION: Follow pill highlight movement direction
+            // Generate sequence array of days from current to target
+            const daySeq = [];
+            if (isGoingRight) {
+                for (let d = previousDayIdx; d <= targetDayIdx; d++) daySeq.push(d);
+            } else {
+                for (let d = previousDayIdx; d >= targetDayIdx; d--) daySeq.push(d);
+            }
+
+            // OPTION B DIRECTION: Follow pill highlight vector
             const exitClass = isGoingRight ? 'slide-exit-right' : 'slide-exit-left';
             const enterClass = isGoingRight ? 'slide-enter-left' : 'slide-enter-right';
 
-            // 1. Current card glides completely off device screen
-            oldCard.classList.remove('is-active');
-            oldCard.classList.add(exitClass);
+            // Dynamic timing tuning
+            const stepExitDurMs = Math.max(90, Math.floor(220 / stepCount));
+            const stepEnterDurMs = Math.max(110, Math.floor(280 / stepCount));
 
-            // 2. Staged entry: brief empty interval before new card enters from outer device edge
-            setTimeout(() => {
-                allCards.forEach(c => {
-                    if (c !== oldCard && c !== newCard) {
-                        c.classList.remove('is-active', 'slide-exit-left', 'slide-exit-right', 'slide-enter-left', 'slide-enter-right');
-                    }
-                });
+            document.documentElement.style.setProperty('--slide-exit-dur', `${stepExitDurMs}ms`);
+            document.documentElement.style.setProperty('--slide-enter-dur', `${stepEnterDurMs}ms`);
 
-                newCard.classList.add(enterClass);
+            let stepIdx = 0;
+
+            function processNextStep() {
+                if (stepIdx >= daySeq.length - 1) {
+                    // FINAL ARRIVAL: Clean up utility classes and lock active card
+                    allCards.forEach(c => {
+                        c.classList.remove('slide-exit-left', 'slide-exit-right', 'slide-enter-left', 'slide-enter-right');
+                        if (parseInt(c.dataset.dayIndex) === targetDayIdx) {
+                            c.classList.add('is-active');
+                        } else {
+                            c.classList.remove('is-active');
+                        }
+                    });
+
+                    currentSelectedDay = targetDayIdx;
+                    
+                    // DEFERRED COMPUTATION: Calculate 50+ nutrients ONLY after final card reaches rest state
+                    recalculateTotals();
+                    resetAnimationState();
+                    isSwitchingDay = false;
+                    return;
+                }
+
+                const currentDay = daySeq[stepIdx];
+                const nextDay = daySeq[stepIdx + 1];
+                const isFinalStep = (stepIdx === daySeq.length - 2);
+
+                const fromCard = document.querySelector(`.day-card-slide[data-day-index="${currentDay}"]`);
+                const toCard = document.querySelector(`.day-card-slide[data-day-index="${nextDay}"]`);
+
+                if (isFinalStep) {
+                    document.documentElement.style.setProperty('--slide-exit-dur', '0.22s');
+                    document.documentElement.style.setProperty('--slide-enter-dur', '0.34s');
+                }
+
+                if (fromCard) {
+                    fromCard.classList.remove('is-active');
+                    fromCard.classList.add(exitClass);
+                }
+
+                const gapTimeout = isFinalStep ? 80 : Math.max(30, Math.floor(70 / stepCount));
 
                 setTimeout(() => {
-                    oldCard.classList.remove('slide-exit-left', 'slide-exit-right');
-                    newCard.classList.remove('slide-enter-left', 'slide-enter-right');
-                    newCard.classList.add('is-active');
-                    isSwitchingDay = false;
-                }, 350);
+                    allCards.forEach(c => {
+                        if (c !== fromCard && c !== toCard) {
+                            c.classList.remove('is-active', 'slide-exit-left', 'slide-exit-right', 'slide-enter-left', 'slide-enter-right');
+                        }
+                    });
 
-            }, 100);
+                    if (toCard) {
+                        toCard.classList.add(enterClass);
+                    }
 
-            recalculateTotals();
-            resetAnimationState();
+                    stepIdx++;
+
+                    const stepWaitMs = isFinalStep ? 340 : stepEnterDurMs + 20;
+                    setTimeout(processNextStep, stepWaitMs);
+
+                }, gapTimeout);
+            }
+
+            processNextStep();
         }
 
         document.querySelectorAll('.day-pill').forEach(pill => {
