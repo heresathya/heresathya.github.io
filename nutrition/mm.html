@@ -547,7 +547,7 @@
             transition: background-color 0.8s var(--ease-smooth);
         }
 
-        /* SMOOTH 0.8s NATURAL FILL ANIMATION */
+        /* SMOOTH 0.8s FILL ANIMATION */
         .progress-fill {
             height: 100%;
             border-radius: 10px;
@@ -998,7 +998,7 @@
         // DEFAULT ALWAYS INITIALIZES TO SUNDAY ON REFRESH
         let currentSelectedDay = 0;
 
-        // STATE STORE & ONE-TIME CASCADING ANIMATION TRACKER
+        // STATE STORE & CASCADING ANIMATION ENGINE
         const nutrientStateStore = {};
         const animatedCapsules = new Set();
 
@@ -1025,6 +1025,7 @@
         function handleCheckboxChange() {
             saveChecklistState();
             recalculateTotals();
+            resetAnimationState();
         }
 
         // SLIDING UNDERLINE ENGINE WITH SCROLL OFFSET FIX
@@ -1078,6 +1079,7 @@
             });
 
             recalculateTotals();
+            resetAnimationState();
         }
 
         // BIND INSTANT CLICK & SCROLL EVENTS TO DAY SWITCHER
@@ -1109,6 +1111,7 @@
 
             saveChecklistState();
             recalculateTotals();
+            resetAnimationState();
         }
 
         function updateMasterCheckBoxState() {
@@ -1258,12 +1261,12 @@
 
             const barColor = getBarColor(id, pct);
 
-            // Store recalculation state immediately in background
+            // Save recalculation values in store
             nutrientStateStore[id] = { val, target, pct, barColor, isAlphaCarotene };
 
             const capsuleParent = badgeEl.closest('.observer-capsule');
 
-            // If this capsule has already performed its entrance cascade animation, update its bars live smoothly
+            // If capsule was already animated during this checklist state, update live without re-cascading
             if (capsuleParent && animatedCapsules.has(capsuleParent)) {
                 applySingleBarAnimation(id);
             }
@@ -1329,14 +1332,60 @@
             const badges = capsule.querySelectorAll('.macro-badge');
             badges.forEach((badge, index) => {
                 const id = badge.id.replace('Badge', '');
-                // Stagger each item by 50ms from top to bottom
                 setTimeout(() => {
                     applySingleBarAnimation(id);
                 }, index * 50);
             });
         }
 
-        // VIEWPORT OBSERVER: TRIGGERS AS SOON AS 60% OF CAPSULE IS VISIBLE
+        // RESET ENGINE: CLEARS ANIMATION LOCK SO CAPSULES RE-CASCADE ON SCROLL OR IMMEDIATELY IF IN VIEW
+        function resetAnimationState() {
+            animatedCapsules.clear();
+
+            document.querySelectorAll('.observer-capsule').forEach(capsule => {
+                const rect = capsule.getBoundingClientRect();
+                const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+                const visibleHeight = Math.min(rect.bottom, windowHeight) - Math.max(rect.top, 0);
+                const is60PercentVisible = visibleHeight > 0 && (visibleHeight / rect.height) >= 0.60;
+
+                if (is60PercentVisible) {
+                    animateCapsuleCascade(capsule);
+                } else {
+                    // Reset off-screen capsule bars instantly to 0% so they are primed to cascade on scroll
+                    const badges = capsule.querySelectorAll('.macro-badge');
+                    badges.forEach(badge => {
+                        const id = badge.id.replace('Badge', '');
+                        const barEl = document.getElementById(`${id}Bar`);
+                        const badgeEl = document.getElementById(`${id}Badge`);
+                        if (barEl) {
+                            barEl.style.transition = 'none';
+                            barEl.style.width = '0%';
+                        }
+                        if (badgeEl) {
+                            badgeEl.style.transition = 'none';
+                            badgeEl.classList.remove('completed-badge');
+                            const txtSpan = badgeEl.querySelector('.badge-txt-span');
+                            if (txtSpan && nutrientStateStore[id]) {
+                                txtSpan.innerText = `${nutrientStateStore[id].pct}%`;
+                            }
+                        }
+                    });
+
+                    capsule.offsetHeight; // Force reflow to instantly apply 0% width
+
+                    // Re-enable smooth transition
+                    badges.forEach(badge => {
+                        const id = badge.id.replace('Badge', '');
+                        const barEl = document.getElementById(`${id}Bar`);
+                        const badgeEl = document.getElementById(`${id}Badge`);
+                        if (barEl) barEl.style.transition = '';
+                        if (badgeEl) badgeEl.style.transition = '';
+                    });
+                }
+            });
+        }
+
+        // VIEWPORT OBSERVER: TRIGGERS AUTOMATICALY AS SOON AS 60% OF CAPSULE BECOMES VISIBLE
         const observerOptions = {
             root: null,
             rootMargin: '0px',
@@ -1344,7 +1393,6 @@
         };
 
         const capsuleObserver = new IntersectionObserver((entries) => {
-            // Sort intersecting entries vertically so upper visible capsules animate first
             const visibleEntries = entries.filter(e => e.isIntersecting);
             visibleEntries.sort((a, b) => a.target.getBoundingClientRect().top - b.target.getBoundingClientRect().top);
 
