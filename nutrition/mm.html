@@ -63,8 +63,8 @@
             --cascade-duration-exit: 0.2s;
             --cascade-duration-entry: 0.28s;
 
-            --slide-exit-dur: 0.36s;
-            --slide-enter-dur: 0.48s;
+            --track-duration: 0.65s;
+            --active-day-index: 0;
         }
 
         body.light-mode {
@@ -104,7 +104,7 @@
             margin: 0 auto;
             width: 95%;
             -webkit-font-smoothing: antialiased;
-            overflow-x: hidden;
+            overflow-x: hidden; /* ELIMINATES HORIZONTAL SCROLLBARS DURING 3D EDGE SLIDES */
             transition: background-color 0.8s var(--ease-smooth), color 0.8s var(--ease-smooth);
         }
 
@@ -114,7 +114,7 @@
             to { opacity: 1; transform: translate3d(0, 0, 0); }
         }
 
-        header, .breadcrumbs, .day-switcher-capsule, .day-stage-wrapper, .contents-container > .wide-capsule, footer {
+        header, .breadcrumbs, .day-switcher-capsule, .days-track-wrapper, .contents-container > .wide-capsule, footer {
             opacity: 1;
             will-change: transform, opacity;
             animation: masterEntrance 1.2s var(--ease-smooth) backwards;
@@ -123,7 +123,7 @@
         header { animation-delay: 0.04s; }
         .breadcrumbs { animation-delay: 0.14s; } 
         .day-switcher-capsule { animation-delay: 0.18s; }
-        .day-stage-wrapper { animation-delay: 0.20s; }
+        .days-track-wrapper { animation-delay: 0.20s; }
         .contents-container > .wide-capsule:nth-of-type(1) { animation-delay: 0.24s; }
         .contents-container > .wide-capsule:nth-of-type(2) { animation-delay: 0.28s; }
         .contents-container > .wide-capsule:nth-of-type(3) { animation-delay: 0.32s; }
@@ -311,86 +311,123 @@
             height: 3px;
             border-radius: 3px;
             background-color: var(--active-line-color);
-            transition: left 0.48s var(--ease-premium), width 0.48s var(--ease-premium), background-color 0.8s var(--ease-smooth);
+            transition: left var(--track-duration, 0.65s) var(--ease-premium), 
+                        width var(--track-duration, 0.65s) var(--ease-premium), 
+                        background-color 0.8s var(--ease-smooth);
             z-index: 1;
             pointer-events: none;
         }
 
         .contents-container { display: flex; flex-direction: column; gap: 32px; margin-bottom: 80px; width: 100%; }
 
-        /* STABLE CSS GRID STACK (STOPS VERTICAL PAGE JUMPING & ISOLATES RENDER LAYOUT) */
-        .day-stage-wrapper {
-            display: grid;
-            grid-template-columns: 1fr;
-            grid-template-rows: auto;
-            width: 100%;
+        /* OPTION A: 100VW DEVICE SCREEN BREAKOUT WITH 3D PERSPECTIVE STAGE */
+        .days-track-wrapper {
+            width: 100vw;
             position: relative;
-            contain: layout paint; /* STOPS POST-SWITCH SHAKING AND RENDER JITTER */
+            left: 50%;
+            margin-left: -50vw;
+            overflow: hidden;
+            perspective: 1200px;
+            padding: 12px 0 24px 0;
+            contain: layout paint;
         }
 
-        /* CARD SLIDES STACKED PERFECTLY ON GRID CELL 1 / 1 */
-        .day-card-slide {
-            grid-area: 1 / 1;
+        .days-track {
+            display: flex;
+            width: 700vw;
+            will-change: transform;
+            transform-style: preserve-3d;
+            transform: translate3d(calc(var(--active-day-index, 0) * -100vw), 0, 0);
+            transition: transform var(--track-duration, 0.65s) var(--ease-premium);
+        }
+
+        .day-slide {
+            width: 100vw;
+            flex: 0 0 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0 max(24px, calc((100vw - 1200px) / 2)); /* ALIGNS ACTIVE CARD PERFECTLY TO 1200PX CONTENT WIDTH */
+            box-sizing: border-box;
+            perspective: 1200px;
+            transform-style: preserve-3d;
+        }
+
+        .day-slide .wide-capsule {
             width: 100%;
-            opacity: 0;
-            pointer-events: none;
-            visibility: hidden;
+            max-width: 1200px;
             will-change: transform, opacity;
-            transform: translate3d(0, 0, 0);
             backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
-            -webkit-font-smoothing: antialiased;
+            transform-style: preserve-3d;
+            transform: translate3d(0, 0, 0) scale(1) rotateY(0deg);
         }
 
-        .day-card-slide.is-active {
-            opacity: 1;
-            pointer-events: auto;
-            visibility: visible;
-            transform: translate3d(0, 0, 0);
+        /* 3D LIFT, ZOOM UP & 180° ROTATION EDGE KEYFRAMES */
+        @keyframes flipExitToLeft {
+            0% {
+                transform: translate3d(0, 0, 0) scale(1) rotateY(0deg);
+                opacity: 1;
+            }
+            25% {
+                transform: translate3d(-10vw, -12px, 90px) scale(1.05) rotateY(25deg);
+                opacity: 0.95;
+            }
+            100% {
+                transform: translate3d(-35vw, 0, -350px) scale(0.72) rotateY(110deg);
+                opacity: 0;
+            }
         }
 
-        /* GPU HARDWARE ACCELERATED VIEWPORT SLIDE ANIMATIONS WITH CUSHIONED EASING */
-        @keyframes exitToLeft {
-            0% { transform: translate3d(0, 0, 0); opacity: 1; }
-            100% { transform: translate3d(-105vw, 0, 0); opacity: 0; }
+        @keyframes flipExitToRight {
+            0% {
+                transform: translate3d(0, 0, 0) scale(1) rotateY(0deg);
+                opacity: 1;
+            }
+            25% {
+                transform: translate3d(10vw, -12px, 90px) scale(1.05) rotateY(-25deg);
+                opacity: 0.95;
+            }
+            100% {
+                transform: translate3d(35vw, 0, -350px) scale(0.72) rotateY(-110deg);
+                opacity: 0;
+            }
         }
 
-        @keyframes exitToRight {
-            0% { transform: translate3d(0, 0, 0); opacity: 1; }
-            100% { transform: translate3d(105vw, 0, 0); opacity: 0; }
+        @keyframes flipEnterFromRight {
+            0% {
+                transform: translate3d(35vw, 0, -350px) scale(0.72) rotateY(-110deg);
+                opacity: 0;
+            }
+            75% {
+                transform: translate3d(4vw, -6px, 45px) scale(1.03) rotateY(-12deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translate3d(0, 0, 0) scale(1) rotateY(0deg);
+                opacity: 1;
+            }
         }
 
-        @keyframes enterFromRight {
-            0% { transform: translate3d(105vw, 0, 0); opacity: 0; }
-            100% { transform: translate3d(0, 0, 0); opacity: 1; }
+        @keyframes flipEnterFromLeft {
+            0% {
+                transform: translate3d(-35vw, 0, -350px) scale(0.72) rotateY(110deg);
+                opacity: 0;
+            }
+            75% {
+                transform: translate3d(-4vw, -6px, 45px) scale(1.03) rotateY(12deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translate3d(0, 0, 0) scale(1) rotateY(0deg);
+                opacity: 1;
+            }
         }
 
-        @keyframes enterFromLeft {
-            0% { transform: translate3d(-105vw, 0, 0); opacity: 0; }
-            100% { transform: translate3d(0, 0, 0); opacity: 1; }
-        }
-
-        .slide-exit-left {
-            animation: exitToLeft var(--slide-exit-dur, 0.36s) cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
-            visibility: visible !important;
-        }
-
-        .slide-exit-right {
-            animation: exitToRight var(--slide-exit-dur, 0.36s) cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
-            visibility: visible !important;
-        }
-
-        .slide-enter-right {
-            animation: enterFromRight var(--slide-enter-dur, 0.48s) cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
-            visibility: visible !important;
-            pointer-events: auto !important;
-        }
-
-        .slide-enter-left {
-            animation: enterFromLeft var(--slide-enter-dur, 0.48s) cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
-            visibility: visible !important;
-            pointer-events: auto !important;
-        }
+        .card-3d-exit-left { animation: flipExitToLeft var(--track-duration, 0.65s) cubic-bezier(0.16, 1, 0.3, 1) forwards !important; }
+        .card-3d-exit-right { animation: flipExitToRight var(--track-duration, 0.65s) cubic-bezier(0.16, 1, 0.3, 1) forwards !important; }
+        .card-3d-enter-right { animation: flipEnterFromRight var(--track-duration, 0.65s) cubic-bezier(0.16, 1, 0.3, 1) forwards !important; }
+        .card-3d-enter-left { animation: flipEnterFromLeft var(--track-duration, 0.65s) cubic-bezier(0.16, 1, 0.3, 1) forwards !important; }
 
         /* WIDE CAPSULES (FULL VISUAL CARD CONTAINER) */
         .wide-capsule {
@@ -799,9 +836,11 @@
             <div class="day-active-line" id="dayActiveLine"></div>
         </div>
 
-        <!-- ISOLATED GRID-AREA STAGE WINDOW -->
-        <div class="day-stage-wrapper" id="dayStage">
-            <!-- 7 CARDS STACKED IN DOM WITH GRID-AREA 1/1 -->
+        <!-- OPTION A RIBBON TRACK WINDOW BREAKING OUT TO 100VW DEVICE SCREEN EDGES -->
+        <div class="days-track-wrapper">
+            <div class="days-track" id="daysTrack">
+                <!-- 7 PRE-RENDERED DAY CARDS WITH 3D ZOOM & FLIP ENGINE -->
+            </div>
         </div>
 
         <!-- CAPSULE 1: MACRONUTRIENTS & ENERGY -->
@@ -1138,7 +1177,7 @@
             resetAnimationState();
         }
 
-        function updateDayLine(activePill, durationMs = 480) {
+        function updateDayLine(activePill, durationMs = 650) {
             const line = document.getElementById('dayActiveLine');
             const capsule = document.getElementById('daySwitcher');
             if (!line || !activePill || !capsule) return;
@@ -1154,17 +1193,20 @@
             line.style.width = `${width}px`;
         }
 
-        // PRE-RENDER ALL 7 DAY CARDS STACKED IN DOM
+        // PRE-RENDER ALL 7 DAY CARDS FOR OPTION A RIBBON (Sun -> Sat)
         function initDaysTrack() {
-            const stage = document.getElementById('dayStage');
-            if (!stage) return;
+            const track = document.getElementById('daysTrack');
+            if (!track) return;
 
-            stage.innerHTML = '';
+            track.innerHTML = '';
 
             for (let dayIdx = 0; dayIdx < 7; dayIdx++) {
+                const daySlide = document.createElement('div');
+                daySlide.className = 'day-slide';
+                daySlide.dataset.dayIndex = dayIdx;
+
                 const capsule = document.createElement('div');
-                capsule.className = 'wide-capsule day-card-slide';
-                capsule.dataset.dayIndex = dayIdx;
+                capsule.className = 'wide-capsule';
 
                 const headerRow = document.createElement('div');
                 headerRow.className = 'capsule-header-row';
@@ -1198,17 +1240,20 @@
 
                 capsule.appendChild(headerRow);
                 capsule.appendChild(grid);
-                stage.appendChild(capsule);
+                daySlide.appendChild(capsule);
+                track.appendChild(daySlide);
             }
         }
 
-        // OPTION B DIRECTIONAL MOTION ENGINE (DEFERRED COMPUTATION & CUSHIONED TIMINGS)
+        // OPTION A 3D RIBBON MOTION ENGINE (GLIDES TO FULL 100VW DEVICE SCREEN EDGES)
         function selectDay(targetDayIdx, isInitial = false) {
             if (isSwitchingDay && !isInitial) return;
             if (targetDayIdx === currentSelectedDay && !isInitial) return;
 
             const previousDayIdx = currentSelectedDay;
             const isGoingRight = targetDayIdx > previousDayIdx;
+            const dayGap = Math.abs(targetDayIdx - previousDayIdx);
+            
             currentSelectedDay = targetDayIdx;
 
             let activePillEl = null;
@@ -1218,19 +1263,20 @@
                 if (isActive) activePillEl = pill;
             });
 
+            const durationMs = isInitial ? 0 : Math.min(650 + (dayGap - 1) * 80, 900);
+
             if (activePillEl) {
-                updateDayLine(activePillEl, isInitial ? 0 : 480);
+                updateDayLine(activePillEl, durationMs);
             }
 
-            const allCards = document.querySelectorAll('.day-card-slide');
-            const oldCard = document.querySelector(`.day-card-slide[data-day-index="${previousDayIdx}"]`);
-            const newCard = document.querySelector(`.day-card-slide[data-day-index="${targetDayIdx}"]`);
+            // Move Option A Ribbon Track across full 100vw device bounds
+            document.documentElement.style.setProperty('--active-day-index', targetDayIdx);
+            document.documentElement.style.setProperty('--track-duration', `${durationMs}ms`);
 
-            if (isInitial || !oldCard || !newCard) {
-                allCards.forEach(c => {
-                    c.classList.remove('is-active', 'slide-exit-left', 'slide-exit-right', 'slide-enter-left', 'slide-enter-right');
-                });
-                if (newCard) newCard.classList.add('is-active');
+            const oldSlide = document.querySelector(`.day-slide[data-day-index="${previousDayIdx}"]`);
+            const newSlide = document.querySelector(`.day-slide[data-day-index="${targetDayIdx}"]`);
+
+            if (isInitial || !oldSlide || !newSlide) {
                 recalculateTotals();
                 resetAnimationState();
                 return;
@@ -1238,36 +1284,31 @@
 
             isSwitchingDay = true;
 
-            const exitClass = isGoingRight ? 'slide-exit-right' : 'slide-exit-left';
-            const enterClass = isGoingRight ? 'slide-enter-left' : 'slide-enter-right';
+            const oldCard = oldSlide.querySelector('.wide-capsule');
+            const newCard = newSlide.querySelector('.wide-capsule');
 
-            // 1. Current card glides completely off device screen with cushioned decelerated curve
-            oldCard.classList.remove('is-active');
-            oldCard.classList.add(exitClass);
+            // Clean up previous 3D animation classes across all cards
+            document.querySelectorAll('.wide-capsule').forEach(c => {
+                c.classList.remove('card-3d-exit-left', 'card-3d-exit-right', 'card-3d-enter-left', 'card-3d-enter-right');
+            });
 
-            // 2. Staged entry: brief empty gap before new card enters smoothly
+            // Apply 3D Zoom Up + 180° Rotate to edge classes
+            const exitClass = isGoingRight ? 'card-3d-exit-left' : 'card-3d-exit-right';
+            const enterClass = isGoingRight ? 'card-3d-enter-right' : 'card-3d-enter-left';
+
+            if (oldCard) oldCard.classList.add(exitClass);
+            if (newCard) newCard.classList.add(enterClass);
+
+            // Deferred Recalculation: 50+ nutrient calculations trigger AFTER animation completes at 120 FPS
             setTimeout(() => {
-                allCards.forEach(c => {
-                    if (c !== oldCard && c !== newCard) {
-                        c.classList.remove('is-active', 'slide-exit-left', 'slide-exit-right', 'slide-enter-left', 'slide-enter-right');
-                    }
-                });
+                if (oldCard) oldCard.classList.remove(exitClass);
+                if (newCard) newCard.classList.remove(enterClass);
 
-                newCard.classList.add(enterClass);
+                recalculateTotals();
+                resetAnimationState();
 
-                setTimeout(() => {
-                    oldCard.classList.remove('slide-exit-left', 'slide-exit-right');
-                    newCard.classList.remove('slide-enter-left', 'slide-enter-right');
-                    newCard.classList.add('is-active');
-
-                    // DEFERRED CALCULATIONS: Runs strictly AFTER the slide completes to preserve 120 FPS
-                    recalculateTotals();
-                    resetAnimationState();
-
-                    isSwitchingDay = false;
-                }, 480);
-
-            }, 120);
+                isSwitchingDay = false;
+            }, durationMs);
         }
 
         document.querySelectorAll('.day-pill').forEach(pill => {
