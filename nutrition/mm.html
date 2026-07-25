@@ -114,7 +114,7 @@
             to { opacity: 1; transform: translate3d(0, 0, 0); }
         }
 
-        header, .breadcrumbs, .day-switcher-capsule, .days-track-wrapper, .wide-capsule, footer {
+        header, .breadcrumbs, .day-switcher-capsule, .days-track-wrapper, .contents-container > .wide-capsule, footer {
             opacity: 1;
             will-change: transform, opacity;
             animation: masterEntrance 1.2s var(--ease-smooth) backwards;
@@ -124,12 +124,12 @@
         .breadcrumbs { animation-delay: 0.14s; } 
         .day-switcher-capsule { animation-delay: 0.18s; }
         .days-track-wrapper { animation-delay: 0.20s; }
-        .wide-capsule:nth-of-type(1) { animation-delay: 0.24s; }
-        .wide-capsule:nth-of-type(2) { animation-delay: 0.28s; }
-        .wide-capsule:nth-of-type(3) { animation-delay: 0.32s; }
-        .wide-capsule:nth-of-type(4) { animation-delay: 0.36s; }
-        .wide-capsule:nth-of-type(5) { animation-delay: 0.40s; }
-        .wide-capsule:nth-of-type(6) { animation-delay: 0.44s; }
+        .contents-container > .wide-capsule:nth-of-type(1) { animation-delay: 0.24s; }
+        .contents-container > .wide-capsule:nth-of-type(2) { animation-delay: 0.28s; }
+        .contents-container > .wide-capsule:nth-of-type(3) { animation-delay: 0.32s; }
+        .contents-container > .wide-capsule:nth-of-type(4) { animation-delay: 0.36s; }
+        .contents-container > .wide-capsule:nth-of-type(5) { animation-delay: 0.40s; }
+        .contents-container > .wide-capsule:nth-of-type(6) { animation-delay: 0.44s; }
         footer { animation-delay: 0.52s; }
 
         /* HEADER DESIGN */
@@ -328,10 +328,9 @@
             border-radius: 28px;
         }
 
-        /* TRACK CONTAINER HOUSES ALL 7 ENTIRE CARD CAPSULES SIDE-BY-SIDE */
         .days-track {
             display: flex;
-            width: 700%; /* Exactly 7 full container widths */
+            width: 700%; /* 7 cards side-by-side */
             will-change: transform;
             transform: translate3d(calc((var(--active-day-index, 0) - 6) * (100% / 7)), 0, 0);
             transition: transform var(--track-duration, 0.38s) var(--ease-premium);
@@ -340,6 +339,7 @@
         .day-slide {
             width: calc(100% / 7);
             flex: 0 0 calc(100% / 7);
+            min-width: 0; /* FIXES FLEX CHILD EXPANSION */
             box-sizing: border-box;
         }
 
@@ -1106,7 +1106,7 @@
             line.style.width = `${width}px`;
         }
 
-        // PRE-RENDER ALL 7 DAY CAPSULES (OPTION B ORDERING: Saturday -> ... -> Sunday)
+        // PRE-RENDER ALL 7 DAY CAPSULES IN OPTION B ORDER (Sat -> Sun)
         function initDaysTrack() {
             const track = document.getElementById('daysTrack');
             if (!track) return;
@@ -1163,7 +1163,6 @@
             return 380 + (dayGap - 1) * 95;
         }
 
-        // OPTION B MOTION ENGINE (FULL CAPSULE MOVES AS A SINGLE VISUAL OBJECT)
         function selectDay(targetDayIdx, isInitial = false) {
             const track = document.getElementById('daysTrack');
             if (!track) return;
@@ -1184,7 +1183,6 @@
                 updateDayLine(activePillEl, durationMs);
             }
 
-            // OPTION B EXACT SHIFT CALCULATION FOR 7-SLIDE TRACK
             document.documentElement.style.setProperty('--active-day-index', targetDayIdx);
             document.documentElement.style.setProperty('--track-duration', `${durationMs}ms`);
 
