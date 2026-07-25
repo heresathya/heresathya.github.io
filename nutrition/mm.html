@@ -64,7 +64,7 @@
             --cascade-duration-entry: 0.28s;
 
             --track-duration: 0.38s;
-            --active-day-index: 0;
+            --option-b-shift: 0%;
         }
 
         body.light-mode {
@@ -320,7 +320,7 @@
 
         .contents-container { display: flex; flex-direction: column; gap: 32px; margin-bottom: 80px; width: 100%; }
 
-        /* CONTINUOUS 7-CAPSULE HORIZONTAL RIBBON WINDOW */
+        /* CONTINUOUS 7-CAPSULE OPTION B HORIZONTAL TRACK WINDOW */
         .days-track-wrapper {
             width: 100%;
             overflow: hidden;
@@ -332,7 +332,7 @@
             display: flex;
             width: 100%;
             will-change: transform;
-            transform: translate3d(calc(var(--active-day-index) * -100%), 0, 0);
+            transform: translate3d(var(--option-b-shift, 0%), 0, 0);
             transition: transform var(--track-duration, 0.38s) var(--ease-premium);
         }
 
@@ -342,7 +342,7 @@
             box-sizing: border-box;
         }
 
-        /* WIDE CAPSULES */
+        /* WIDE CAPSULES (FULL Visual Card Container) */
         .wide-capsule {
             background-color: var(--panel-bg);
             border: 1px solid var(--panel-border);
@@ -420,12 +420,12 @@
         }
 
         /* STRICT ROW COUNTS FOR DESKTOP TOP-TO-BOTTOM COLUMN FILL */
-        #macroGrid { grid-template-rows: repeat(4, auto); }       /* 7 items -> 4 left, 3 right */
-        #fatsGrid { grid-template-rows: repeat(4, auto); }        /* 8 items -> 4 left, 4 right */
-        #carotenoidsGrid { grid-template-rows: repeat(1, auto); } /* 2 items -> 1 left, 1 right */
-        #vitaminsGrid { grid-template-rows: repeat(7, auto); }    /* 13 items -> 7 left, 6 right */
-        #macroMineralsGrid { grid-template-rows: repeat(4, auto); }/* 7 items -> 4 left, 3 right */
-        #traceMineralsGrid { grid-template-rows: repeat(5, auto); }/* 9 items -> 5 left, 4 right */
+        #macroGrid { grid-template-rows: repeat(4, auto); }       
+        #fatsGrid { grid-template-rows: repeat(4, auto); }        
+        #carotenoidsGrid { grid-template-rows: repeat(1, auto); } 
+        #vitaminsGrid { grid-template-rows: repeat(7, auto); }    
+        #macroMineralsGrid { grid-template-rows: repeat(4, auto); }
+        #traceMineralsGrid { grid-template-rows: repeat(5, auto); }
 
         .food-item-checkbox {
             display: flex;
@@ -490,7 +490,6 @@
             width: 100%;
         }
 
-        /* FIXED HEIGHT PREVENTS TITLE SHAKING / GOING UP */
         .macro-top-label {
             display: flex;
             justify-content: space-between;
@@ -503,7 +502,6 @@
 
         .macro-val { color: var(--text-muted); font-size: 13px; transition: color 0.8s var(--ease-smooth); }
         
-        /* FULLY SYMMETRIC BIDIRECTIONAL WIPE & MORPH BADGE */
         .macro-badge {
             padding: 2px 8px;
             border-radius: 12px;
@@ -525,7 +523,6 @@
                         border-radius 0.35s var(--ease-smooth);
         }
 
-        /* PERCENTAGE TEXT: WIPES LEFT-TO-RIGHT ON ENTRY, WIPES BACK RIGHT-TO-LEFT ON EXIT */
         .badge-txt-span {
             display: inline-block;
             white-space: nowrap;
@@ -539,7 +536,6 @@
                         clip-path 0.35s var(--ease-smooth);
         }
 
-        /* TICK SVG: APPEARS SMOOTHLY ON ENTRY */
         .badge-tick-svg {
             width: 0px;
             height: 13px;
@@ -556,7 +552,6 @@
             flex-shrink: 0;
         }
 
-        /* WARNING DANGER ICON IMAGE */
         .badge-warn-img {
             width: 0px;
             height: 16px;
@@ -569,7 +564,6 @@
             flex-shrink: 0;
         }
 
-        /* 100% COMPLETED BADGE OVERRIDES */
         .macro-badge.completed-badge {
             min-width: 22px !important;
             width: 22px !important;
@@ -591,7 +585,6 @@
             width: 13px;
         }
 
-        /* WARNING BADGE OVERRIDES (FOR EXCEEDED CEILING LIMITS) */
         .macro-badge.warning-badge {
             min-width: 22px !important;
             width: 22px !important;
@@ -624,7 +617,6 @@
             transition: background-color 0.8s var(--ease-smooth);
         }
 
-        /* GPU HARDWARE ACCELERATED BAR ANIMATION ENGINE */
         .progress-fill {
             height: 100%;
             border-radius: 10px;
@@ -644,7 +636,6 @@
 
         .nav-text { display: inline-block !important; white-space: nowrap !important; transition: transform 0.4s var(--ease-smooth); }
 
-        /* GPU-ACCELERATED FLUID WAVE ENGINE */
         @keyframes fluidWave {
             0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
@@ -672,7 +663,6 @@
             will-change: background-position;
         }
 
-        /* PHONES & IPADS RENDER STRICT SINGLE COLUMN */
         @media (max-width: 1024px) {
             .food-checklist-grid, .macros-grid {
                 grid-template-columns: 1fr !important;
@@ -759,10 +749,10 @@
             <div class="day-active-line" id="dayActiveLine"></div>
         </div>
 
-        <!-- 7-CAPSULE HORIZONTAL RIBBON TRACK -->
+        <!-- OPTION B 7-CAPSULE HORIZONTAL RIBBON TRACK -->
         <div class="days-track-wrapper">
             <div class="days-track" id="daysTrack">
-                <!-- 7 PRE-RENDERED DAY CAPSULES GENERATED DYNAMICALLY -->
+                <!-- 7 PRE-RENDERED DAY CAPSULES GENERATED IN OPTION B ORDER -->
             </div>
         </div>
 
@@ -891,7 +881,7 @@
                 <div class="macro-card"><div class="macro-top-label"><span>Selenium</span><span class="macro-badge" id="seBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg><img class="badge-warn-img" src="https://github.com/minsathya/minsathya.github.io/blob/main/nutrition/images/warning.png?raw=true" alt="Warning"></span></div><div class="macro-val" id="seVal">0 mcg / 55 mcg</div><div class="progress-track"><div class="progress-fill" id="seBar"></div></div></div>
                 <div class="macro-card"><div class="macro-top-label"><span>Copper</span><span class="macro-badge" id="cuBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg><img class="badge-warn-img" src="https://github.com/minsathya/minsathya.github.io/blob/main/nutrition/images/warning.png?raw=true" alt="Warning"></span></div><div class="macro-val" id="cuVal">0 mcg / 900 mcg</div><div class="progress-track"><div class="progress-fill" id="cuBar"></div></div></div>
                 <div class="macro-card"><div class="macro-top-label"><span>Fluoride</span><span class="macro-badge" id="fBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg><img class="badge-warn-img" src="https://github.com/minsathya/minsathya.github.io/blob/main/nutrition/images/warning.png?raw=true" alt="Warning"></span></div><div class="macro-val" id="fVal">0 mcg / 4000 mcg</div><div class="progress-track"><div class="progress-fill" id="fBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Chromium</span><span class="macro-badge" id="crBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg><img class="badge-warn-img" src="https://github.com/minsathya/minsathya.github.io/blob/main/nutrition/images/warning.png?raw=true" alt="Warning"></span></div><div class="macro-val" id="crVal">0 mcg / 35 mcg</div><div class="progress-track"><div class="progress-fill" id="crBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Chromium</span><span class="macro-badge" id="crBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg><img class="badge-warn-img" src="https://github.com/minsathya/minsathya.github.io/blob/main/nutrition/images/warning.png?raw=true" alt="Warning"></span></div><div class="macro-val" id="crVal">0 mcg / 35 mcg</div><div class="progress-track"><div class="progress-fill" id="crBar"></div></div></div>
                 <div class="macro-card"><div class="macro-top-label"><span>Molybdenum</span><span class="macro-badge" id="moBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg><img class="badge-warn-img" src="https://github.com/minsathya/minsathya.github.io/blob/main/nutrition/images/warning.png?raw=true" alt="Warning"></span></div><div class="macro-val" id="moVal">0 mcg / 45 mcg</div><div class="progress-track"><div class="progress-fill" id="moBar"></div></div></div>
             </div>
         </div>
@@ -939,7 +929,6 @@
             'Iodized salt': { cal: 0, pro: 0, fiber: 0, carb: 0, fat: 0, sug: 0, lac: 0, sfa: 0, unsat: 0, mufa: 0, pufa: 0, ala: 0, epa: 0, dha: 0, o6: 0, bCar: 0, aCar: 0, vitA: 0, vitB1: 0, vitB2: 0, vitB3: 0, vitB5: 0, vitB6: 0, vitB7: 0, vitB9: 0, vitB12: 0, vitC: 0, vitD: 0, vitE: 0, vitK: 0, ca: 0, p: 0, mg: 0, na: 1963, k: 0, cl: 3038, s: 0, fe: 0, zn: 0, iodine: 150, mn: 0, se: 0, cu: 0, f: 19, cr: 0, mo: 0 }
         };
 
-        // STRICT ITEM SEQUENCE FOR EVERY DAY
         const weeklyMenu = {
             0: [
                 { name: 'Chickpeas', key: 'Chickpeas', qty: '100 gms raw' },
@@ -1055,7 +1044,6 @@
             ]
         };
 
-        // TARGET NUTRIENT BENCHMARKS
         const targets = {
             cal: 2200, pro: 100, fiber: 40, carb: 300, fat: 78, sug: 25, lac: 25,
             sfa: 20, unsat: 50, mufa: 30, pufa: 20, ala: 1.6, epa: 0.25, dha: 0.25, o6: 17,
@@ -1065,15 +1053,12 @@
             fe: 8, zn: 11, iodine: 150, mn: 2.3, se: 55, cu: 900, f: 4000, cr: 35, mo: 45
         };
 
-        // CEILING NUTRIENTS
         const ceilingNutrients = ['sugars', 'lactose', 'fat', 'sfa', 'na', 'cl'];
-
         const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
         
         let currentSelectedDay = 0;
         let isCascadeAnimating = false;
 
-        // STATE STORE & CASCADING ANIMATION ENGINE
         const nutrientStateStore = {};
         const animatedCapsules = new Set();
 
@@ -1104,7 +1089,6 @@
             resetAnimationState();
         }
 
-        // SLIDING UNDERLINE ENGINE WITH DYNAMIC DISTANCE TIMING
         function updateDayLine(activePill, durationMs) {
             const line = document.getElementById('dayActiveLine');
             const capsule = document.getElementById('daySwitcher');
@@ -1121,16 +1105,20 @@
             line.style.width = `${width}px`;
         }
 
-        // PRE-RENDER ALL 7 DAY CAPSULES INTO THE RIBBON TRACK
+        // PRE-RENDER ALL 7 DAY CAPSULES (OPTION B ORDERING: Saturday -> ... -> Sunday)
+        // Order in DOM: Sat [index 6], Fri [5], Thu [4], Wed [3], Tue [2], Mon [1], Sun [0]
+        // This ensures moving forward (0 -> 1 -> 2) shifts track RIGHT, so active capsule exits RIGHT and new comes from LEFT.
         function initDaysTrack() {
             const track = document.getElementById('daysTrack');
             if (!track) return;
 
             track.innerHTML = '';
 
-            for (let dayIdx = 0; dayIdx < 7; dayIdx++) {
+            // Render from Day 6 down to Day 0
+            for (let dayIdx = 6; dayIdx >= 0; dayIdx--) {
                 const daySlide = document.createElement('div');
                 daySlide.className = 'day-slide';
+                daySlide.dataset.dayIndex = dayIdx;
 
                 const capsule = document.createElement('div');
                 capsule.className = 'wide-capsule';
@@ -1172,14 +1160,13 @@
             }
         }
 
-        // DYNAMIC DISTANCE-BASED DURATION CALCULATOR (SMOOTH ACCELERATION & SOFT LANDING)
         function getTransitionDuration(dayGap) {
             if (dayGap === 0) return 0;
-            // Base 380ms for 1 day + 95ms per skipped day (e.g. 6 days = ~855ms)
             return 380 + (dayGap - 1) * 95;
         }
 
-        // RENDER / GLIDE TO ACTIVE DAY ACROSS THE 7-CAPSULE HORIZONTAL RIBBON
+        // OPTION B MOTION:
+        // Sunday is at track position -600%, Monday at -500%, ... Saturday at 0%
         function selectDay(targetDayIdx, isInitial = false) {
             const track = document.getElementById('daysTrack');
             if (!track) return;
@@ -1189,7 +1176,6 @@
 
             currentSelectedDay = targetDayIdx;
 
-            // Update pills
             let activePillEl = null;
             document.querySelectorAll('.day-pill').forEach(pill => {
                 const isActive = parseInt(pill.dataset.day) === targetDayIdx;
@@ -1201,15 +1187,23 @@
                 updateDayLine(activePillEl, durationMs);
             }
 
-            // Move the Ribbon Track smoothly
-            document.documentElement.style.setProperty('--active-day-index', targetDayIdx);
+            // OPTION B SHIFT:
+            // Day 0 (Sun)  -> shift -600%
+            // Day 1 (Mon)  -> shift -500%
+            // Day 2 (Tue)  -> shift -400%
+            // Day 3 (Wed)  -> shift -300%
+            // Day 4 (Thu)  -> shift -200%
+            // Day 5 (Fri)  -> shift -100%
+            // Day 6 (Sat)  -> shift    0%
+            const shiftPercentage = (targetDayIdx - 6) * 100;
+
+            document.documentElement.style.setProperty('--option-b-shift', `${shiftPercentage}%`);
             document.documentElement.style.setProperty('--track-duration', `${durationMs}ms`);
 
             recalculateTotals();
             resetAnimationState();
         }
 
-        // BIND CLICK & SCROLL EVENTS TO DAY SWITCHER
         document.querySelectorAll('.day-pill').forEach(pill => {
             pill.addEventListener('click', function() {
                 const dayIdx = parseInt(this.dataset.day);
@@ -1227,7 +1221,6 @@
             });
         }
 
-        // MASTER CHECKBOX ENGINE (STAGGERED CASCADE ANIMATION)
         function toggleSelectAll(dayIdx) {
             if (isCascadeAnimating) return;
             const grid = document.getElementById(`foodGrid_${dayIdx}`);
@@ -1277,7 +1270,6 @@
             }
         }
 
-        // DYNAMIC OPACITY & COLOR ENGINE
         function getDynamicBarColor(id, pct) {
             const isCeiling = ceilingNutrients.includes(id);
 
@@ -1333,7 +1325,6 @@
 
             updateMasterCheckBoxState(currentSelectedDay);
 
-            // CAPSULE 1
             updateBar('cal', totals.cal, targets.cal, 'kcal');
             updateBar('protein', totals.pro, targets.pro, 'gms');
             updateBar('fiber', totals.fiber, targets.fiber, 'gms');
@@ -1342,7 +1333,6 @@
             updateBar('sugars', totals.sug, targets.sug, 'gms', '< ');
             updateBar('lactose', totals.lac, targets.lac, 'gms', '< ');
 
-            // CAPSULE 2
             updateBar('sfa', totals.sfa, targets.sfa, 'gms');
             updateBar('unsat', totals.unsat, targets.unsat, 'gms');
             updateBar('mufa', totals.mufa, targets.mufa, 'gms');
@@ -1352,11 +1342,9 @@
             updateBar('dha', totals.dha, targets.dha, 'gms');
             updateBar('o6', totals.o6, targets.o6, 'gms');
 
-            // CAPSULE 3
             updateBar('bCarotene', totals.bCar, targets.bCar, 'mcg');
             updateBar('aCarotene', totals.aCar, targets.aCar, 'mcg', '', true);
 
-            // CAPSULE 4
             updateBar('vitA', totals.vitA, targets.vitA, 'mcg');
             updateBar('vitB1', totals.vitB1, targets.vitB1, 'mg');
             updateBar('vitB2', totals.vitB2, targets.vitB2, 'mg');
@@ -1371,7 +1359,6 @@
             updateBar('vitE', totals.vitE, targets.vitE, 'mg');
             updateBar('vitK', totals.vitK, targets.vitK, 'mcg');
 
-            // CAPSULE 5
             updateBar('calcium', totals.ca, targets.ca, 'mg');
             updateBar('p', totals.p, targets.p, 'mg');
             updateBar('mg', totals.mg, targets.mg, 'mg');
@@ -1380,7 +1367,6 @@
             updateBar('cl', totals.cl, targets.cl, 'mg');
             updateBar('s', totals.s, targets.s, 'mg');
 
-            // CAPSULE 6
             updateBar('iron', totals.fe, targets.fe, 'mg');
             updateBar('zinc', totals.zn, targets.zn, 'mg');
             updateBar('iodine', totals.iodine, targets.iodine, 'mcg');
