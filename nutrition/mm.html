@@ -325,6 +325,8 @@
             display: flex;
             flex-direction: column;
             width: 100%;
+            position: relative;
+            overflow: hidden; /* MASK FOR DIRECTIONAL SLIDING TRACK */
             transition: transform 0.55s var(--ease-smooth), 
                         box-shadow 0.55s var(--ease-smooth), 
                         border-color 0.55s var(--ease-smooth),
@@ -373,7 +375,7 @@
             filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25));
         }
 
-        /* RIGID 2-COLUMN CSS GRID PREVENTS SHUFFLING & JUMPING */
+        /* RIGID 2-COLUMN CSS GRID WITH DIRECTIONAL SLIDE TRACK */
         .food-checklist-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -381,6 +383,7 @@
             grid-template-rows: repeat(7, auto);
             gap: 16px 32px;
             width: 100%;
+            will-change: transform, opacity;
         }
 
         .macros-grid {
@@ -872,7 +875,7 @@
                 <div class="macro-card"><div class="macro-top-label"><span>Copper</span><span class="macro-badge" id="cuBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg><img class="badge-warn-img" src="https://github.com/minsathya/minsathya.github.io/blob/main/nutrition/images/warning.png?raw=true" alt="Warning"></span></div><div class="macro-val" id="cuVal">0 mcg / 900 mcg</div><div class="progress-track"><div class="progress-fill" id="cuBar"></div></div></div>
                 <div class="macro-card"><div class="macro-top-label"><span>Fluoride</span><span class="macro-badge" id="fBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg><img class="badge-warn-img" src="https://github.com/minsathya/minsathya.github.io/blob/main/nutrition/images/warning.png?raw=true" alt="Warning"></span></div><div class="macro-val" id="fVal">0 mcg / 4000 mcg</div><div class="progress-track"><div class="progress-fill" id="fBar"></div></div></div>
                 <div class="macro-card"><div class="macro-top-label"><span>Chromium</span><span class="macro-badge" id="crBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg><img class="badge-warn-img" src="https://github.com/minsathya/minsathya.github.io/blob/main/nutrition/images/warning.png?raw=true" alt="Warning"></span></div><div class="macro-val" id="crVal">0 mcg / 35 mcg</div><div class="progress-track"><div class="progress-fill" id="crBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Molybdenum</span><span class="macro-badge" id="moBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg><img class="badge-warn-img" src="https://github.com/minsathya/minsathya.github.io/blob/main/nutrition/images/warning.png?raw=true" alt="Warning"></span></div><div class="macro-val" id="moVal">0 mcg / 45 mcg</div><div class="progress-track"><div class="progress-fill" id="moBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Molybdenum</span><span class="macro-badge" id="moBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg><img class="badge-warn-img" src="https://github.com/minsathya/minsathya.github.io/blob/main/nutrition/images/warning.png?raw=true" alt="Warning"></span></div><div class="macro-val" id="moVal">0 mcg / 45 mcg</div><div class="progress-track"><div class="progress-fill" id="moBar"></div></div></div>
             </div>
         </div>
     </main>
@@ -1051,6 +1054,7 @@
         const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
         
         let currentSelectedDay = 0;
+        let isDayTransitioning = false;
 
         // STATE STORE & CASCADING ANIMATION ENGINE
         const nutrientStateStore = {};
@@ -1098,10 +1102,14 @@
             line.style.width = `${width}px`;
         }
 
-        function renderDay(dayIdx) {
-            currentSelectedDay = dayIdx;
-            let activePillEl = null;
+        // OPTION B DIRECTIONAL TAB CAROUSEL WITH SOFT LIFT-OFF & CUSHIONED LANDING
+        function renderDay(dayIdx, isInitial = false) {
+            if (isDayTransitioning && !isInitial) return;
 
+            const foodGrid = document.getElementById('foodGrid');
+            if (!foodGrid) return;
+
+            let activePillEl = null;
             document.querySelectorAll('.day-pill').forEach(pill => {
                 const isActive = parseInt(pill.dataset.day) === dayIdx;
                 pill.classList.toggle('active', isActive);
@@ -1114,33 +1122,77 @@
                 updateDayLine(activePillEl);
             }
 
-            const foodGrid = document.getElementById('foodGrid');
-            foodGrid.innerHTML = '';
+            // Populate Table Content Helper
+            const populateTable = (targetDay) => {
+                foodGrid.innerHTML = '';
+                const todayItems = weeklyMenu[targetDay] || [];
+                const savedCheckedIndices = loadChecklistState(targetDay);
 
-            const todayItems = weeklyMenu[dayIdx] || [];
-            const savedCheckedIndices = loadChecklistState(dayIdx);
+                todayItems.forEach((item, idx) => {
+                    const isChecked = savedCheckedIndices.includes(idx);
+                    const label = document.createElement('label');
+                    label.className = 'food-item-checkbox';
+                    label.innerHTML = `
+                        <input type="checkbox" data-idx="${idx}" ${isChecked ? 'checked' : ''} onchange="handleCheckboxChange()">
+                        <div class="custom-check-box"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                        <span class="food-name">${item.name}<span class="food-qty">– ${item.qty}</span></span>
+                    `;
+                    foodGrid.appendChild(label);
+                });
+            };
 
-            todayItems.forEach((item, idx) => {
-                const isChecked = savedCheckedIndices.includes(idx);
-                const label = document.createElement('label');
-                label.className = 'food-item-checkbox';
-                label.innerHTML = `
-                    <input type="checkbox" data-idx="${idx}" ${isChecked ? 'checked' : ''} onchange="handleCheckboxChange()">
-                    <div class="custom-check-box"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-                    <span class="food-name">${item.name}<span class="food-qty">– ${item.qty}</span></span>
-                `;
-                foodGrid.appendChild(label);
-            });
+            if (isInitial) {
+                currentSelectedDay = dayIdx;
+                populateTable(dayIdx);
+                recalculateTotals();
+                resetAnimationState();
+                return;
+            }
 
-            recalculateTotals();
-            resetAnimationState();
+            // OPTION B MOTION DIRECTION (Following Underline Path)
+            // Sun -> Mon (Forward / Right Underline): Old Table exits RIGHT (+60%), New Table enters from LEFT (-60%)
+            // Mon -> Sun (Backward / Left Underline): Old Table exits LEFT (-60%), New Table enters from RIGHT (+60%)
+            const isForward = dayIdx > currentSelectedDay;
+            isDayTransitioning = true;
+
+            // Phase 1: Soft Exit Lift-Off
+            foodGrid.style.transition = 'transform 0.18s cubic-bezier(0.4, 0, 1, 1), opacity 0.18s ease-in';
+            foodGrid.style.transform = isForward ? 'translate3d(60%, 0, 0)' : 'translate3d(-60%, 0, 0)';
+            foodGrid.style.opacity = '0';
+
+            setTimeout(() => {
+                currentSelectedDay = dayIdx;
+                populateTable(dayIdx);
+                recalculateTotals();
+                resetAnimationState();
+
+                // Phase 2: Instant Off-Screen Positioning for Entry
+                foodGrid.style.transition = 'none';
+                foodGrid.style.transform = isForward ? 'translate3d(-60%, 0, 0)' : 'translate3d(60%, 0, 0)';
+                foodGrid.style.opacity = '0';
+
+                // Force DOM reflow
+                foodGrid.offsetHeight;
+
+                // Phase 3: Cushioned Spring Glide & Soft Landing
+                foodGrid.style.transition = 'transform 0.42s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.32s cubic-bezier(0.25, 1, 0.5, 1)';
+                foodGrid.style.transform = 'translate3d(0, 0, 0)';
+                foodGrid.style.opacity = '1';
+
+                setTimeout(() => {
+                    isDayTransitioning = false;
+                }, 420);
+
+            }, 180);
         }
 
         // BIND INSTANT CLICK & SCROLL EVENTS TO DAY SWITCHER
         document.querySelectorAll('.day-pill').forEach(pill => {
             pill.addEventListener('click', function() {
                 const dayIdx = parseInt(this.dataset.day);
-                renderDay(dayIdx);
+                if (dayIdx !== currentSelectedDay) {
+                    renderDay(dayIdx);
+                }
             });
         });
 
@@ -1156,7 +1208,7 @@
         let isCascadeAnimating = false;
 
         function toggleSelectAll() {
-            if (isCascadeAnimating) return; // Prevent spamming while animation runs
+            if (isCascadeAnimating || isDayTransitioning) return; // Prevent spamming
             const checkboxes = Array.from(document.querySelectorAll('#foodGrid input[type="checkbox"]'));
             if (checkboxes.length === 0) return;
 
@@ -1678,8 +1730,8 @@
             });
         });
 
-        // INIT PAGE ALWAYS DEFAULTED TO SUNDAY
-        renderDay(currentSelectedDay);
+        // INIT PAGE ALWAYS DEFAULTED TO SUNDAY (INITIAL LOAD WITHOUT SLIDE)
+        renderDay(currentSelectedDay, true);
     </script>
 </body>
 </html>
