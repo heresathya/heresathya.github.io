@@ -62,9 +62,6 @@
             --cascade-distance: 24px;
             --cascade-duration-exit: 0.2s;
             --cascade-duration-entry: 0.28s;
-
-            --track-duration: 0.38s;
-            --active-day-index: 0;
         }
 
         body.light-mode {
@@ -104,7 +101,7 @@
             margin: 0 auto;
             width: 95%;
             -webkit-font-smoothing: antialiased;
-            overflow-x: hidden;
+            overflow-x: hidden; /* PREVENTS HORIZONTAL SCROLLBARS WHILE CARD FLIES OFF-SCREEN */
             transition: background-color 0.8s var(--ease-smooth), color 0.8s var(--ease-smooth);
         }
 
@@ -318,21 +315,18 @@
 
         .contents-container { display: flex; flex-direction: column; gap: 32px; margin-bottom: 80px; width: 100%; }
 
-        /* ISOLATED STAGE WINDOW */
+        /* CSS GRID STACK WINDOW (NO HEIGHT COLLAPSE / NO LAYOUT JUMP) */
         .day-stage-wrapper {
-            position: relative;
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-template-rows: auto;
             width: 100%;
-            min-height: 480px;
-            overflow: hidden;
-            padding: 6px 0;
-            border-radius: 32px;
+            position: relative;
         }
 
-        /* CARD SLIDES */
+        /* CARD SLIDES LOCKED IN SINGLE GRID CELL */
         .day-card-slide {
-            position: absolute;
-            top: 6px;
-            left: 0;
+            grid-area: 1 / 1;
             width: 100%;
             opacity: 0;
             pointer-events: none;
@@ -341,53 +335,51 @@
         }
 
         .day-card-slide.is-active {
-            position: relative;
-            top: 0;
             opacity: 1;
             pointer-events: auto;
             visibility: visible;
             transform: translate3d(0, 0, 0);
         }
 
-        /* STAGE MOTION KEYFRAMES */
+        /* FULL VIEWPORT (100vw) OFF-SCREEN GLIDE ANIMATIONS */
         @keyframes exitToLeft {
             0% { transform: translate3d(0, 0, 0); opacity: 1; }
-            100% { transform: translate3d(-110%, 0, 0); opacity: 0; }
+            100% { transform: translate3d(-100vw, 0, 0); opacity: 0; }
         }
 
         @keyframes exitToRight {
             0% { transform: translate3d(0, 0, 0); opacity: 1; }
-            100% { transform: translate3d(110%, 0, 0); opacity: 0; }
+            100% { transform: translate3d(100vw, 0, 0); opacity: 0; }
         }
 
         @keyframes enterFromRight {
-            0% { transform: translate3d(110%, 0, 0); opacity: 0; }
+            0% { transform: translate3d(100vw, 0, 0); opacity: 0; }
             100% { transform: translate3d(0, 0, 0); opacity: 1; }
         }
 
         @keyframes enterFromLeft {
-            0% { transform: translate3d(-110%, 0, 0); opacity: 0; }
+            0% { transform: translate3d(-100vw, 0, 0); opacity: 0; }
             100% { transform: translate3d(0, 0, 0); opacity: 1; }
         }
 
         .slide-exit-left {
-            animation: exitToLeft 0.22s cubic-bezier(0.4, 0, 1, 1) forwards !important;
+            animation: exitToLeft 0.28s cubic-bezier(0.4, 0, 1, 1) forwards !important;
             visibility: visible !important;
         }
 
         .slide-exit-right {
-            animation: exitToRight 0.22s cubic-bezier(0.4, 0, 1, 1) forwards !important;
+            animation: exitToRight 0.28s cubic-bezier(0.4, 0, 1, 1) forwards !important;
             visibility: visible !important;
         }
 
         .slide-enter-right {
-            animation: enterFromRight 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+            animation: enterFromRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
             visibility: visible !important;
             pointer-events: auto !important;
         }
 
         .slide-enter-left {
-            animation: enterFromLeft 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+            animation: enterFromLeft 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
             visibility: visible !important;
             pointer-events: auto !important;
         }
@@ -799,9 +791,9 @@
             <div class="day-active-line" id="dayActiveLine"></div>
         </div>
 
-        <!-- ISOLATED STAGE WINDOW (SINGLE CARDS DEPART & ENTER) -->
+        <!-- ISOLATED GRID-AREA STAGE WINDOW -->
         <div class="day-stage-wrapper" id="dayStage">
-            <!-- 7 CARDS PRE-RENDERED IN DOM -->
+            <!-- 7 CARDS STACKED IN DOM WITH GRID-AREA 1/1 -->
         </div>
 
         <!-- CAPSULE 1: MACRONUTRIENTS & ENERGY -->
@@ -1154,7 +1146,7 @@
             line.style.width = `${width}px`;
         }
 
-        // PRE-RENDER ALL 7 DAY CARDS IN DOM
+        // PRE-RENDER ALL 7 DAY CARDS STACKED IN DOM
         function initDaysTrack() {
             const stage = document.getElementById('dayStage');
             if (!stage) return;
@@ -1202,7 +1194,7 @@
             }
         }
 
-        // ISOLATED STAGE TRANSITION (OLD CARD DEPARTS, BRIEF EMPTY STAGE, NEW CARD ARRIVES)
+        // OPTION B DIRECTIONAL MOTION ENGINE (CARD GLIDES COMPLETELY OFF DEVICE SCREEN EDGES)
         function selectDay(targetDayIdx, isInitial = false) {
             if (isSwitchingDay && !isInitial) return;
             if (targetDayIdx === currentSelectedDay && !isInitial) return;
@@ -1238,14 +1230,15 @@
 
             isSwitchingDay = true;
 
-            const exitClass = isGoingRight ? 'slide-exit-left' : 'slide-exit-right';
-            const enterClass = isGoingRight ? 'slide-enter-right' : 'slide-enter-left';
+            // OPTION B DIRECTION: Follow pill highlight movement direction
+            const exitClass = isGoingRight ? 'slide-exit-right' : 'slide-exit-left';
+            const enterClass = isGoingRight ? 'slide-enter-left' : 'slide-enter-right';
 
-            // 1. Current card glides out of view
+            // 1. Current card glides completely off device screen
             oldCard.classList.remove('is-active');
             oldCard.classList.add(exitClass);
 
-            // 2. Staged arrival: Brief empty gap before new card glides in
+            // 2. Staged entry: brief empty interval before new card enters from outer device edge
             setTimeout(() => {
                 allCards.forEach(c => {
                     if (c !== oldCard && c !== newCard) {
@@ -1260,9 +1253,9 @@
                     newCard.classList.remove('slide-enter-left', 'slide-enter-right');
                     newCard.classList.add('is-active');
                     isSwitchingDay = false;
-                }, 320);
+                }, 350);
 
-            }, 120);
+            }, 100);
 
             recalculateTotals();
             resetAnimationState();
