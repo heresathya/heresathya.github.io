@@ -694,7 +694,7 @@
         </div>
 
         <!-- CAPSULE 1: MACRONUTRIENTS & ENERGY -->
-        <div class="wide-capsule">
+        <div class="wide-capsule observer-capsule">
             <div class="capsule-header-row">
                 <h2 class="capsule-title">
                      <span class="icon-box">
@@ -715,7 +715,7 @@
         </div>
 
         <!-- CAPSULE 2: FATTY ACID PROFILE & LIPIDS -->
-        <div class="wide-capsule">
+        <div class="wide-capsule observer-capsule">
             <div class="capsule-header-row">
                 <h2 class="capsule-title">
                     <span class="icon-box">
@@ -737,7 +737,7 @@
         </div>
 
         <!-- CAPSULE 3: CAROTENOIDS -->
-        <div class="wide-capsule">
+        <div class="wide-capsule observer-capsule">
             <div class="capsule-header-row">
                 <h2 class="capsule-title">
                     <span class="icon-box">
@@ -753,7 +753,7 @@
         </div>
 
         <!-- CAPSULE 4: VITAMINS -->
-        <div class="wide-capsule">
+        <div class="wide-capsule observer-capsule">
             <div class="capsule-header-row">
                 <h2 class="capsule-title">
                 <span class="icon-box">
@@ -780,7 +780,7 @@
         </div>
 
         <!-- CAPSULE 5: MACRO MINERALS -->
-        <div class="wide-capsule">
+        <div class="wide-capsule observer-capsule">
             <div class="capsule-header-row">
                 <h2 class="capsule-title">
                    <span class="icon-box">
@@ -801,7 +801,7 @@
         </div>
 
         <!-- CAPSULE 6: TRACE MINERALS -->
-        <div class="wide-capsule">
+        <div class="wide-capsule observer-capsule">
             <div class="capsule-header-row">
                 <h2 class="capsule-title">
                     <span class="icon-box">
@@ -996,6 +996,10 @@
         
         // DEFAULT ALWAYS INITIALIZES TO SUNDAY ON REFRESH
         let currentSelectedDay = 0;
+
+        // STATE STORE FOR SCROLL-TRIGGERED ANIMATIONS
+        const nutrientStateStore = {};
+        const visibleCapsules = new Set();
 
         // LOCALSTORAGE PERSISTENCE ENGINE
         function saveChecklistState() {
@@ -1239,6 +1243,42 @@
 
             if (!valEl || !barEl || !badgeEl) return;
 
+            // Compute math & textual representation immediately
+            let pct = 0;
+            let formattedVal = 0;
+
+            if (isAlphaCarotene) {
+                formattedVal = val.toFixed(val % 1 ? (val < 1 ? 2 : 1) : 0);
+                valEl.innerText = `${formattedVal} ${unit} / N/A`;
+            } else {
+                pct = target > 0 ? Math.min(Math.round((val / target) * 100), 100) : 100;
+                formattedVal = val.toFixed(val % 1 ? (val < 1 ? 2 : 1) : 0);
+                valEl.innerText = `${formattedVal} ${unit} / ${prefix}${target} ${unit}`;
+            }
+
+            const barColor = getBarColor(id, pct);
+
+            // Store State
+            nutrientStateStore[id] = { val, target, pct, barColor, isAlphaCarotene };
+
+            // Find parent observer capsule
+            const capsuleParent = badgeEl.closest('.observer-capsule');
+
+            // If capsule is currently visible in viewport, apply animation immediately; otherwise queue
+            if (capsuleParent && visibleCapsules.has(capsuleParent)) {
+                applyBarAnimation(id);
+            }
+        }
+
+        function applyBarAnimation(id) {
+            const state = nutrientStateStore[id];
+            if (!state) return;
+
+            const badgeEl = document.getElementById(`${id}Badge`);
+            const barEl = document.getElementById(`${id}Bar`);
+
+            if (!badgeEl || !barEl) return;
+
             let txtSpan = badgeEl.querySelector('.badge-txt-span');
             let tickSvg = badgeEl.querySelector('.badge-tick-svg');
 
@@ -1248,11 +1288,8 @@
                 tickSvg = badgeEl.querySelector('.badge-tick-svg');
             }
 
-            // SPECIAL ALPHA-CAROTENE N/A HANDLING
-            if (isAlphaCarotene) {
-                const formattedVal = val.toFixed(val % 1 ? (val < 1 ? 2 : 1) : 0);
-                valEl.innerText = `${formattedVal} ${unit} / N/A`;
-                if (val > 0) {
+            if (state.isAlphaCarotene) {
+                if (state.val > 0) {
                     barEl.style.width = '100%';
                     barEl.style.backgroundColor = '#34a853';
                     badgeEl.classList.add('completed-badge');
@@ -1269,27 +1306,49 @@
                 return;
             }
 
-            const pct = target > 0 ? Math.min(Math.round((val / target) * 100), 100) : 100;
-            const formattedVal = val.toFixed(val % 1 ? (val < 1 ? 2 : 1) : 0);
-            valEl.innerText = `${formattedVal} ${unit} / ${prefix}${target} ${unit}`;
+            barEl.style.backgroundColor = state.barColor;
 
-            const barColor = getBarColor(id, pct);
-            barEl.style.backgroundColor = barColor;
-
-            if (pct >= 100) {
+            if (state.pct >= 100) {
                 barEl.style.width = '100%';
                 badgeEl.classList.add('completed-badge');
-                badgeEl.style.backgroundColor = barColor;
+                badgeEl.style.backgroundColor = state.barColor;
                 badgeEl.style.color = '#ffffff';
                 txtSpan.innerText = '100%';
             } else {
-                barEl.style.width = `${pct}%`;
+                barEl.style.width = `${state.pct}%`;
                 badgeEl.classList.remove('completed-badge');
-                badgeEl.style.backgroundColor = hexToRgba(barColor, 0.15);
-                badgeEl.style.color = barColor;
-                txtSpan.innerText = `${pct}%`;
+                badgeEl.style.backgroundColor = hexToRgba(state.barColor, 0.15);
+                badgeEl.style.color = state.barColor;
+                txtSpan.innerText = `${state.pct}%`;
             }
         }
+
+        // VIEWPORT SCROLL OBSERVER ENGINE
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px 0px -40px 0px',
+            threshold: 0.1
+        };
+
+        const capsuleObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    visibleCapsules.add(entry.target);
+                    // Trigger live fill-up animations for all cards inside this capsule
+                    const badges = entry.target.querySelectorAll('.macro-badge');
+                    badges.forEach(badge => {
+                        const id = badge.id.replace('Badge', '');
+                        applyBarAnimation(id);
+                    });
+                } else {
+                    visibleCapsules.delete(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.observer-capsule').forEach(capsule => {
+            capsuleObserver.observe(capsule);
+        });
 
         // BREADCRUMB BUILDER
         (function buildDynamicBreadcrumbs() {
