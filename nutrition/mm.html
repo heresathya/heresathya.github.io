@@ -584,12 +584,15 @@
             transition: background-color 0.8s var(--ease-smooth);
         }
 
-        /* SMOOTH 0.8s FILL ANIMATION */
+        /* GPU HARDWARE ACCELERATED BAR ANIMATION ENGINE */
         .progress-fill {
             height: 100%;
             border-radius: 10px;
-            width: 0%;
-            transition: width 0.8s var(--ease-smooth), background-color 0.4s var(--ease-smooth);
+            width: 100%;
+            transform-origin: left center;
+            transform: scaleX(0);
+            will-change: transform;
+            transition: transform 0.8s var(--ease-smooth), background-color 0.4s var(--ease-smooth);
         }
 
         /* FOOTER */
@@ -1035,14 +1038,13 @@
 
         const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
         
-        // DEFAULT ALWAYS INITIALIZES TO SUNDAY ON REFRESH
         let currentSelectedDay = 0;
 
         // STATE STORE & CASCADING ANIMATION ENGINE
         const nutrientStateStore = {};
         const animatedCapsules = new Set();
 
-        // LOCALSTORAGE PERSISTENCE ENGINE
+        // LOCALSTORAGE PERSISTENCE ENGINE (PER-DAY CHECKLIST MEMORY THAT NEVER WIPES ON REFRESH)
         function saveChecklistState() {
             const checkboxes = document.querySelectorAll('#foodGrid input[type="checkbox"]');
             const checkedIndices = [];
@@ -1054,11 +1056,11 @@
 
         function loadChecklistState(dayIdx) {
             const saved = localStorage.getItem(`meal_checklist_day_${dayIdx}`);
-            if (!saved) return [];
+            if (saved === null) return null; // Unvisited days return null -> default to unticked
             try {
                 return JSON.parse(saved);
             } catch (e) {
-                return [];
+                return null;
             }
         }
 
@@ -1107,7 +1109,8 @@
             const savedCheckedIndices = loadChecklistState(dayIdx);
 
             todayItems.forEach((item, idx) => {
-                const isChecked = savedCheckedIndices.includes(idx);
+                // If unvisited day (null), default to FALSE (unticked list). If saved state exists, use saved checks!
+                const isChecked = savedCheckedIndices !== null ? savedCheckedIndices.includes(idx) : false;
                 const label = document.createElement('label');
                 label.className = 'food-item-checkbox';
                 label.innerHTML = `
@@ -1338,14 +1341,14 @@
 
             if (state.isAlphaCarotene) {
                 if (state.val > 0) {
-                    barEl.style.width = '100%';
+                    barEl.style.transform = 'scaleX(1)';
                     barEl.style.backgroundColor = 'rgba(52, 168, 83, 1)';
                     badgeEl.classList.remove('warning-badge');
                     badgeEl.classList.add('completed-badge');
                     badgeEl.style.backgroundColor = 'rgba(52, 168, 83, 1)';
                     badgeEl.style.color = '#ffffff';
                 } else {
-                    barEl.style.width = '0%';
+                    barEl.style.transform = 'scaleX(0)';
                     barEl.style.backgroundColor = 'rgba(52, 168, 83, 0)';
                     badgeEl.classList.remove('completed-badge', 'warning-badge');
                     badgeEl.style.backgroundColor = 'rgba(52, 168, 83, 0.15)';
@@ -1357,23 +1360,23 @@
 
                 // CEILING LIMIT EXCEEDED (> 100%) -> WARNING DANGER ICON
                 if (state.visualStyle.isWarning) {
-                    barEl.style.width = '100%';
+                    barEl.style.transform = 'scaleX(1)';
                     badgeEl.classList.remove('completed-badge');
                     badgeEl.classList.add('warning-badge');
                     txtSpan.innerText = `${state.rawPct}%`;
                 } 
                 // STANDARD GOAL COMPLETED (100%) -> CHECKMARK ICON
                 else if (state.pct >= 100) {
-                    barEl.style.width = '100%';
+                    barEl.style.transform = 'scaleX(1)';
                     badgeEl.classList.remove('warning-badge');
                     badgeEl.classList.add('completed-badge');
                     badgeEl.style.backgroundColor = state.visualStyle.barColor;
                     badgeEl.style.color = '#ffffff';
                     txtSpan.innerText = '100%';
                 } 
-                // PROGRESSING (0% - 99%) -> PERCENTAGE TEXT
+                // PROGRESSING (0% - 99%) -> GPU TRANSFORM SCALEX
                 else {
-                    barEl.style.width = `${state.pct}%`;
+                    barEl.style.transform = `scaleX(${state.pct / 100})`;
                     badgeEl.classList.remove('completed-badge', 'warning-badge');
                     badgeEl.style.backgroundColor = state.visualStyle.badgeBg;
                     badgeEl.style.color = state.visualStyle.badgeTextColor;
@@ -1417,7 +1420,7 @@
                         const badgeEl = document.getElementById(`${id}Badge`);
                         if (barEl) {
                             barEl.style.transition = 'none';
-                            barEl.style.width = '0%';
+                            barEl.style.transform = 'scaleX(0)';
                         }
                         if (badgeEl) {
                             badgeEl.style.transition = 'none';
@@ -1431,7 +1434,7 @@
                         }
                     });
 
-                    capsule.offsetHeight; // Force DOM reflow to instantly apply 0% width
+                    capsule.offsetHeight; // Force DOM reflow to instantly apply 0% transform
 
                     // Re-enable smooth transition
                     badges.forEach(badge => {
@@ -1445,7 +1448,7 @@
             });
         }
 
-        // VIEWPORT OBSERVER: TRIGGERS AUTOMATICALY AS SOON AS 50% OF CAPSULE BECOMES VISIBLE
+        // VIEWPORT OBSERVER: TRIGGERS AUTOMATICALLY AS SOON AS 50% OF CAPSULE BECOMES VISIBLE
         const observerOptions = {
             root: null,
             rootMargin: '0px',
