@@ -64,7 +64,7 @@
             --cascade-duration-entry: 0.28s;
 
             --track-duration: 0.38s;
-            --option-b-shift: 0%;
+            --active-day-index: 0;
         }
 
         body.light-mode {
@@ -320,7 +320,7 @@
 
         .contents-container { display: flex; flex-direction: column; gap: 32px; margin-bottom: 80px; width: 100%; }
 
-        /* CONTINUOUS 7-CAPSULE OPTION B HORIZONTAL TRACK WINDOW */
+        /* CONTINUOUS 7-CAPSULE HORIZONTAL RIBBON WINDOW */
         .days-track-wrapper {
             width: 100%;
             overflow: hidden;
@@ -328,21 +328,22 @@
             border-radius: 28px;
         }
 
+        /* TRACK CONTAINER HOUSES ALL 7 ENTIRE CARD CAPSULES SIDE-BY-SIDE */
         .days-track {
             display: flex;
-            width: 100%;
+            width: 700%; /* Exactly 7 full container widths */
             will-change: transform;
-            transform: translate3d(var(--option-b-shift, 0%), 0, 0);
+            transform: translate3d(calc((var(--active-day-index, 0) - 6) * (100% / 7)), 0, 0);
             transition: transform var(--track-duration, 0.38s) var(--ease-premium);
         }
 
         .day-slide {
-            flex: 0 0 100%;
-            width: 100%;
+            width: calc(100% / 7);
+            flex: 0 0 calc(100% / 7);
             box-sizing: border-box;
         }
 
-        /* WIDE CAPSULES (FULL Visual Card Container) */
+        /* WIDE CAPSULES (FULL VISUAL CARD CONTAINER) */
         .wide-capsule {
             background-color: var(--panel-bg);
             border: 1px solid var(--panel-border);
@@ -1106,15 +1107,12 @@
         }
 
         // PRE-RENDER ALL 7 DAY CAPSULES (OPTION B ORDERING: Saturday -> ... -> Sunday)
-        // Order in DOM: Sat [index 6], Fri [5], Thu [4], Wed [3], Tue [2], Mon [1], Sun [0]
-        // This ensures moving forward (0 -> 1 -> 2) shifts track RIGHT, so active capsule exits RIGHT and new comes from LEFT.
         function initDaysTrack() {
             const track = document.getElementById('daysTrack');
             if (!track) return;
 
             track.innerHTML = '';
 
-            // Render from Day 6 down to Day 0
             for (let dayIdx = 6; dayIdx >= 0; dayIdx--) {
                 const daySlide = document.createElement('div');
                 daySlide.className = 'day-slide';
@@ -1165,8 +1163,7 @@
             return 380 + (dayGap - 1) * 95;
         }
 
-        // OPTION B MOTION:
-        // Sunday is at track position -600%, Monday at -500%, ... Saturday at 0%
+        // OPTION B MOTION ENGINE (FULL CAPSULE MOVES AS A SINGLE VISUAL OBJECT)
         function selectDay(targetDayIdx, isInitial = false) {
             const track = document.getElementById('daysTrack');
             if (!track) return;
@@ -1187,17 +1184,8 @@
                 updateDayLine(activePillEl, durationMs);
             }
 
-            // OPTION B SHIFT:
-            // Day 0 (Sun)  -> shift -600%
-            // Day 1 (Mon)  -> shift -500%
-            // Day 2 (Tue)  -> shift -400%
-            // Day 3 (Wed)  -> shift -300%
-            // Day 4 (Thu)  -> shift -200%
-            // Day 5 (Fri)  -> shift -100%
-            // Day 6 (Sat)  -> shift    0%
-            const shiftPercentage = (targetDayIdx - 6) * 100;
-
-            document.documentElement.style.setProperty('--option-b-shift', `${shiftPercentage}%`);
+            // OPTION B EXACT SHIFT CALCULATION FOR 7-SLIDE TRACK
+            document.documentElement.style.setProperty('--active-day-index', targetDayIdx);
             document.documentElement.style.setProperty('--track-duration', `${durationMs}ms`);
 
             recalculateTotals();
