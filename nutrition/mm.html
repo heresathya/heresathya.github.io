@@ -476,31 +476,27 @@
             height: 22px;
             position: relative;
             overflow: hidden;
-            transition: background-color 0.4s var(--ease-smooth), 
-                        color 0.4s var(--ease-smooth), 
-                        min-width 0.4s var(--ease-smooth),
-                        width 0.4s var(--ease-smooth),
-                        border-radius 0.4s var(--ease-smooth);
+            transition: background-color 0.35s var(--ease-smooth), 
+                        color 0.35s var(--ease-smooth), 
+                        min-width 0.35s var(--ease-smooth),
+                        width 0.35s var(--ease-smooth),
+                        border-radius 0.35s var(--ease-smooth);
         }
 
         .badge-txt-span {
             display: inline-block;
             white-space: nowrap;
-            transition: opacity 0.3s ease, clip-path 0.35s var(--ease-smooth);
+            transition: opacity 0.3s ease;
         }
 
-        /* 100% COMPLETED ELASTIC POP ANIMATED TICK BADGE */
+        /* SMOOTH ZERO-SHAKE TICK POP ANIMATION */
         @keyframes tickPopIn {
             0% {
-                transform: scale(0) rotate(-15deg);
+                transform: scale(0.3);
                 opacity: 0;
             }
-            70% {
-                transform: scale(1.25) rotate(3deg);
-                opacity: 1;
-            }
             100% {
-                transform: scale(1) rotate(0deg);
+                transform: scale(1);
                 opacity: 1;
             }
         }
@@ -521,7 +517,7 @@
             fill: none;
             stroke-linecap: round;
             stroke-linejoin: round;
-            animation: tickPopIn 0.4s var(--ease-premium) forwards;
+            animation: tickPopIn 0.35s var(--ease-smooth) forwards;
         }
 
         .progress-track {
