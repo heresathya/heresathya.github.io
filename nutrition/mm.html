@@ -424,11 +424,20 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s var(--ease-smooth), border-color 0.8s var(--ease-smooth);
+            transition: background-color 0.25s var(--ease-smooth), border-color 0.25s var(--ease-smooth), transform 0.2s var(--ease-smooth);
             flex-shrink: 0;
         }
 
-        .custom-check-box svg { width: 14px; height: 14px; stroke: #0b0b0b; stroke-width: 3; fill: none; opacity: 0; transition: opacity 0.2s; }
+        .custom-check-box svg { 
+            width: 14px; 
+            height: 14px; 
+            stroke: #0b0b0b; 
+            stroke-width: 3; 
+            fill: none; 
+            opacity: 0; 
+            transform: scale(0.3);
+            transition: opacity 0.25s var(--ease-smooth), transform 0.25s var(--ease-smooth); 
+        }
 
         .food-item-checkbox input:checked + .custom-check-box,
         .custom-check-box.checked {
@@ -437,7 +446,10 @@
         }
 
         .food-item-checkbox input:checked + .custom-check-box svg,
-        .custom-check-box.checked svg { opacity: 1; }
+        .custom-check-box.checked svg { 
+            opacity: 1; 
+            transform: scale(1);
+        }
 
         .food-name { font-size: 15.5px; font-weight: 500; color: var(--text-main); transition: color 0.8s var(--ease-smooth); }
         .food-qty { font-size: 13.5px; color: var(--text-muted); margin-left: 6px; transition: color 0.8s var(--ease-smooth); }
@@ -1140,20 +1152,42 @@
             });
         }
 
-        // MASTER CHECKBOX ENGINE
+        // MASTER CHECKBOX ENGINE (STAGGERED ONE-BY-ONE CASCADE ANIMATION)
+        let isCascadeAnimating = false;
+
         function toggleSelectAll() {
-            const checkboxes = document.querySelectorAll('#foodGrid input[type="checkbox"]');
+            if (isCascadeAnimating) return; // Prevent spamming while animation runs
+            const checkboxes = Array.from(document.querySelectorAll('#foodGrid input[type="checkbox"]'));
             if (checkboxes.length === 0) return;
 
-            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-            
-            checkboxes.forEach(cb => {
-                cb.checked = !allChecked;
-            });
+            const allChecked = checkboxes.every(cb => cb.checked);
+            const targetState = !allChecked;
+            isCascadeAnimating = true;
 
-            saveChecklistState();
-            recalculateTotals();
-            resetAnimationState();
+            // Sequence: 0 -> N-1 when selecting (Top to Bottom down Left Col, then Right Col on Laptop / Top to Bottom on Mobile)
+            // Sequence: N-1 -> 0 when deselecting (Bottom to Top up Right Col, then Left Col on Laptop / Bottom to Top on Mobile)
+            const sequence = targetState 
+                ? checkboxes.map((_, i) => i) 
+                : checkboxes.map((_, i) => checkboxes.length - 1 - i);
+
+            // Stagger delay per item so the full cascade takes ~0.65 to 0.75 seconds total
+            const stepDelay = Math.max(35, Math.floor(650 / checkboxes.length));
+
+            sequence.forEach((itemIdx, seqStep) => {
+                setTimeout(() => {
+                    const cb = checkboxes[itemIdx];
+                    if (cb && cb.checked !== targetState) {
+                        cb.checked = targetState;
+                        saveChecklistState();
+                        recalculateTotals();
+                        resetAnimationState();
+                    }
+
+                    if (seqStep === sequence.length - 1) {
+                        isCascadeAnimating = false;
+                    }
+                }, seqStep * stepDelay);
+            });
         }
 
         function updateMasterCheckBoxState() {
