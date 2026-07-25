@@ -547,7 +547,7 @@
             transition: background-color 0.8s var(--ease-smooth);
         }
 
-        /* SMOOTH 1.1s FILL ANIMATION SPEED */
+        /* SMOOTH FILL ANIMATION PACE */
         .progress-fill {
             height: 100%;
             border-radius: 10px;
@@ -998,9 +998,11 @@
         // DEFAULT ALWAYS INITIALIZES TO SUNDAY ON REFRESH
         let currentSelectedDay = 0;
 
-        // STATE STORE FOR SCROLL-TRIGGERED ANIMATIONS
+        // STATE STORE & ONE-TIME ENTRANCE ANIMATION TRACKER
         const nutrientStateStore = {};
         const visibleCapsules = new Set();
+        const animatedCapsules = new Set();
+        let scrollStopTimer = null;
 
         // LOCALSTORAGE PERSISTENCE ENGINE
         function saveChecklistState() {
@@ -1262,16 +1264,15 @@
             // Store State
             nutrientStateStore[id] = { val, target, pct, barColor, isAlphaCarotene };
 
-            // Find parent observer capsule
             const capsuleParent = badgeEl.closest('.observer-capsule');
 
-            // If capsule is currently visible in viewport, apply animation immediately; otherwise queue
-            if (capsuleParent && visibleCapsules.has(capsuleParent)) {
-                applyBarAnimation(id);
+            // If capsule has already performed its entrance animation, update its bar smoothly live
+            if (capsuleParent && animatedCapsules.has(capsuleParent)) {
+                applyBarAnimation(id, false);
             }
         }
 
-        function applyBarAnimation(id) {
+        function applyBarAnimation(id, instant = false) {
             const state = nutrientStateStore[id];
             if (!state) return;
 
@@ -1289,6 +1290,11 @@
                 tickSvg = badgeEl.querySelector('.badge-tick-svg');
             }
 
+            if (instant) {
+                barEl.style.transition = 'none';
+                badgeEl.style.transition = 'none';
+            }
+
             if (state.isAlphaCarotene) {
                 if (state.val > 0) {
                     barEl.style.width = '100%';
@@ -1304,45 +1310,55 @@
                     badgeEl.style.color = '#34a853';
                     txtSpan.innerText = '0%';
                 }
-                return;
+            } else {
+                barEl.style.backgroundColor = state.barColor;
+
+                if (state.pct >= 100) {
+                    barEl.style.width = '100%';
+                    badgeEl.classList.add('completed-badge');
+                    badgeEl.style.backgroundColor = state.barColor;
+                    badgeEl.style.color = '#ffffff';
+                    txtSpan.innerText = '100%';
+                } else {
+                    barEl.style.width = `${state.pct}%`;
+                    badgeEl.classList.remove('completed-badge');
+                    badgeEl.style.backgroundColor = hexToRgba(state.barColor, 0.15);
+                    badgeEl.style.color = state.barColor;
+                    txtSpan.innerText = `${state.pct}%`;
+                }
             }
 
-            barEl.style.backgroundColor = state.barColor;
-
-            if (state.pct >= 100) {
-                barEl.style.width = '100%';
-                badgeEl.classList.add('completed-badge');
-                badgeEl.style.backgroundColor = state.barColor;
-                badgeEl.style.color = '#ffffff';
-                txtSpan.innerText = '100%';
-            } else {
-                barEl.style.width = `${state.pct}%`;
-                badgeEl.classList.remove('completed-badge');
-                badgeEl.style.backgroundColor = hexToRgba(state.barColor, 0.15);
-                badgeEl.style.color = state.barColor;
-                txtSpan.innerText = `${state.pct}%`;
+            if (instant) {
+                barEl.offsetHeight; // Force DOM reflow
+                badgeEl.offsetHeight;
+                barEl.style.transition = '';
+                badgeEl.style.transition = '';
             }
         }
 
-        // VIEWPORT SCROLL OBSERVER ENGINE (DEEPER 120px VIEWPORT OFFSET + 20% THRESHOLD)
+        // VIEWPORT SCROLL & SCROLL-STOP DETECTION ENGINE
         const observerOptions = {
             root: null,
-            rootMargin: '0px 0px -120px 0px',
-            threshold: 0.20
+            rootMargin: '0px 0px -80px 0px',
+            threshold: 0.15
         };
 
         const capsuleObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
+                const capsule = entry.target;
                 if (entry.isIntersecting) {
-                    visibleCapsules.add(entry.target);
-                    // Trigger live fill-up animations for all cards inside this capsule
-                    const badges = entry.target.querySelectorAll('.macro-badge');
-                    badges.forEach(badge => {
-                        const id = badge.id.replace('Badge', '');
-                        applyBarAnimation(id);
-                    });
+                    visibleCapsules.add(capsule);
                 } else {
-                    visibleCapsules.delete(entry.target);
+                    visibleCapsules.delete(capsule);
+                    // Fast-scrolled past without stopping: auto-fill instantly so data stays ready
+                    if (!animatedCapsules.has(capsule)) {
+                        animatedCapsules.add(capsule);
+                        const badges = capsule.querySelectorAll('.macro-badge');
+                        badges.forEach(badge => {
+                            const id = badge.id.replace('Badge', '');
+                            applyBarAnimation(id, true); // instant fill
+                        });
+                    }
                 }
             });
         }, observerOptions);
@@ -1350,6 +1366,28 @@
         document.querySelectorAll('.observer-capsule').forEach(capsule => {
             capsuleObserver.observe(capsule);
         });
+
+        // Trigger smooth entrance animation ONCE when screen stops scrolling to read
+        function triggerScrollStopAnimations() {
+            visibleCapsules.forEach(capsule => {
+                if (!animatedCapsules.has(capsule)) {
+                    animatedCapsules.add(capsule);
+                    const badges = capsule.querySelectorAll('.macro-badge');
+                    badges.forEach(badge => {
+                        const id = badge.id.replace('Badge', '');
+                        applyBarAnimation(id, false); // smooth animated entrance
+                    });
+                }
+            });
+        }
+
+        // Detect screen scroll pause (200ms idle)
+        window.addEventListener('scroll', () => {
+            clearTimeout(scrollStopTimer);
+            scrollStopTimer = setTimeout(() => {
+                triggerScrollStopAnimations();
+            }, 200);
+        }, { passive: true });
 
         // BREADCRUMB BUILDER
         (function buildDynamicBreadcrumbs() {
@@ -1527,6 +1565,11 @@
 
         // INIT PAGE ALWAYS DEFAULTED TO SUNDAY
         renderDay(currentSelectedDay);
+
+        // Initial trigger for top visible capsule after landing load
+        setTimeout(() => {
+            triggerScrollStopAnimations();
+        }, 300);
     </script>
 </body>
 </html>
