@@ -62,6 +62,9 @@
             --cascade-distance: 24px;
             --cascade-duration-exit: 0.2s;
             --cascade-duration-entry: 0.28s;
+
+            --slide-exit-dur: 0.36s;
+            --slide-enter-dur: 0.48s;
         }
 
         body.light-mode {
@@ -101,7 +104,7 @@
             margin: 0 auto;
             width: 95%;
             -webkit-font-smoothing: antialiased;
-            overflow-x: hidden; /* PREVENTS HORIZONTAL SCROLLBARS WHILE CARD FLIES OFF-SCREEN */
+            overflow-x: hidden;
             transition: background-color 0.8s var(--ease-smooth), color 0.8s var(--ease-smooth);
         }
 
@@ -308,23 +311,24 @@
             height: 3px;
             border-radius: 3px;
             background-color: var(--active-line-color);
-            transition: left 0.38s var(--ease-premium), width 0.38s var(--ease-premium), background-color 0.8s var(--ease-smooth);
+            transition: left 0.48s var(--ease-premium), width 0.48s var(--ease-premium), background-color 0.8s var(--ease-smooth);
             z-index: 1;
             pointer-events: none;
         }
 
         .contents-container { display: flex; flex-direction: column; gap: 32px; margin-bottom: 80px; width: 100%; }
 
-        /* CSS GRID STACK WINDOW (NO HEIGHT COLLAPSE / NO LAYOUT JUMP) */
+        /* STABLE CSS GRID STACK (STOPS VERTICAL PAGE JUMPING & ISOLATES RENDER LAYOUT) */
         .day-stage-wrapper {
             display: grid;
             grid-template-columns: 1fr;
             grid-template-rows: auto;
             width: 100%;
             position: relative;
+            contain: layout paint; /* STOPS POST-SWITCH SHAKING AND RENDER JITTER */
         }
 
-        /* CARD SLIDES LOCKED IN SINGLE GRID CELL */
+        /* CARD SLIDES STACKED PERFECTLY ON GRID CELL 1 / 1 */
         .day-card-slide {
             grid-area: 1 / 1;
             width: 100%;
@@ -332,6 +336,10 @@
             pointer-events: none;
             visibility: hidden;
             will-change: transform, opacity;
+            transform: translate3d(0, 0, 0);
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
         .day-card-slide.is-active {
@@ -341,45 +349,45 @@
             transform: translate3d(0, 0, 0);
         }
 
-        /* FULL VIEWPORT (100vw) OFF-SCREEN GLIDE ANIMATIONS */
+        /* GPU HARDWARE ACCELERATED VIEWPORT SLIDE ANIMATIONS WITH CUSHIONED EASING */
         @keyframes exitToLeft {
             0% { transform: translate3d(0, 0, 0); opacity: 1; }
-            100% { transform: translate3d(-100vw, 0, 0); opacity: 0; }
+            100% { transform: translate3d(-105vw, 0, 0); opacity: 0; }
         }
 
         @keyframes exitToRight {
             0% { transform: translate3d(0, 0, 0); opacity: 1; }
-            100% { transform: translate3d(100vw, 0, 0); opacity: 0; }
+            100% { transform: translate3d(105vw, 0, 0); opacity: 0; }
         }
 
         @keyframes enterFromRight {
-            0% { transform: translate3d(100vw, 0, 0); opacity: 0; }
+            0% { transform: translate3d(105vw, 0, 0); opacity: 0; }
             100% { transform: translate3d(0, 0, 0); opacity: 1; }
         }
 
         @keyframes enterFromLeft {
-            0% { transform: translate3d(-100vw, 0, 0); opacity: 0; }
+            0% { transform: translate3d(-105vw, 0, 0); opacity: 0; }
             100% { transform: translate3d(0, 0, 0); opacity: 1; }
         }
 
         .slide-exit-left {
-            animation: exitToLeft 0.28s cubic-bezier(0.4, 0, 1, 1) forwards !important;
+            animation: exitToLeft var(--slide-exit-dur, 0.36s) cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
             visibility: visible !important;
         }
 
         .slide-exit-right {
-            animation: exitToRight 0.28s cubic-bezier(0.4, 0, 1, 1) forwards !important;
+            animation: exitToRight var(--slide-exit-dur, 0.36s) cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
             visibility: visible !important;
         }
 
         .slide-enter-right {
-            animation: enterFromRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+            animation: enterFromRight var(--slide-enter-dur, 0.48s) cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
             visibility: visible !important;
             pointer-events: auto !important;
         }
 
         .slide-enter-left {
-            animation: enterFromLeft 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+            animation: enterFromLeft var(--slide-enter-dur, 0.48s) cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
             visibility: visible !important;
             pointer-events: auto !important;
         }
@@ -1130,7 +1138,7 @@
             resetAnimationState();
         }
 
-        function updateDayLine(activePill, durationMs = 380) {
+        function updateDayLine(activePill, durationMs = 480) {
             const line = document.getElementById('dayActiveLine');
             const capsule = document.getElementById('daySwitcher');
             if (!line || !activePill || !capsule) return;
@@ -1194,7 +1202,7 @@
             }
         }
 
-        // OPTION B DIRECTIONAL MOTION ENGINE (CARD GLIDES COMPLETELY OFF DEVICE SCREEN EDGES)
+        // OPTION B DIRECTIONAL MOTION ENGINE (DEFERRED COMPUTATION & CUSHIONED TIMINGS)
         function selectDay(targetDayIdx, isInitial = false) {
             if (isSwitchingDay && !isInitial) return;
             if (targetDayIdx === currentSelectedDay && !isInitial) return;
@@ -1211,7 +1219,7 @@
             });
 
             if (activePillEl) {
-                updateDayLine(activePillEl, isInitial ? 0 : 380);
+                updateDayLine(activePillEl, isInitial ? 0 : 480);
             }
 
             const allCards = document.querySelectorAll('.day-card-slide');
@@ -1230,15 +1238,14 @@
 
             isSwitchingDay = true;
 
-            // OPTION B DIRECTION: Follow pill highlight movement direction
             const exitClass = isGoingRight ? 'slide-exit-right' : 'slide-exit-left';
             const enterClass = isGoingRight ? 'slide-enter-left' : 'slide-enter-right';
 
-            // 1. Current card glides completely off device screen
+            // 1. Current card glides completely off device screen with cushioned decelerated curve
             oldCard.classList.remove('is-active');
             oldCard.classList.add(exitClass);
 
-            // 2. Staged entry: brief empty interval before new card enters from outer device edge
+            // 2. Staged entry: brief empty gap before new card enters smoothly
             setTimeout(() => {
                 allCards.forEach(c => {
                     if (c !== oldCard && c !== newCard) {
@@ -1252,13 +1259,15 @@
                     oldCard.classList.remove('slide-exit-left', 'slide-exit-right');
                     newCard.classList.remove('slide-enter-left', 'slide-enter-right');
                     newCard.classList.add('is-active');
+
+                    // DEFERRED CALCULATIONS: Runs strictly AFTER the slide completes to preserve 120 FPS
+                    recalculateTotals();
+                    resetAnimationState();
+
                     isSwitchingDay = false;
-                }, 350);
+                }, 480);
 
-            }, 100);
-
-            recalculateTotals();
-            resetAnimationState();
+            }, 120);
         }
 
         document.querySelectorAll('.day-pill').forEach(pill => {
