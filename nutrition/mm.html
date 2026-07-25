@@ -62,9 +62,6 @@
             --cascade-distance: 24px;
             --cascade-duration-exit: 0.2s;
             --cascade-duration-entry: 0.28s;
-
-            --slide-exit-dur: 0.42s;
-            --slide-enter-dur: 0.54s;
         }
 
         body.light-mode {
@@ -311,24 +308,23 @@
             height: 3px;
             border-radius: 3px;
             background-color: var(--active-line-color);
-            transition: left 0.48s var(--ease-premium), width 0.48s var(--ease-premium), background-color 0.8s var(--ease-smooth);
+            transition: left 0.38s var(--ease-premium), width 0.38s var(--ease-premium), background-color 0.8s var(--ease-smooth);
             z-index: 1;
             pointer-events: none;
         }
 
         .contents-container { display: flex; flex-direction: column; gap: 32px; margin-bottom: 80px; width: 100%; }
 
-        /* CSS GRID STACK WINDOW (CONTAINED GPU LAYER TO PREVENT SHAKE & JITTER) */
+        /* CSS GRID STACK WINDOW (NO HEIGHT COLLAPSE / NO LAYOUT JUMP) */
         .day-stage-wrapper {
             display: grid;
             grid-template-columns: 1fr;
             grid-template-rows: auto;
             width: 100%;
             position: relative;
-            contain: layout paint; /* ELIMINATES LAYOUT REFLOW SHAKING */
         }
 
-        /* CARD SLIDES LOCKED IN SINGLE GRID CELL WITH HARDWARE ACCELERATION */
+        /* CARD SLIDES LOCKED IN SINGLE GRID CELL */
         .day-card-slide {
             grid-area: 1 / 1;
             width: 100%;
@@ -336,9 +332,6 @@
             pointer-events: none;
             visibility: hidden;
             will-change: transform, opacity;
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
-            transform: translate3d(0, 0, 0);
         }
 
         .day-card-slide.is-active {
@@ -348,45 +341,45 @@
             transform: translate3d(0, 0, 0);
         }
 
-        /* FULL VIEWPORT (105vw) BUTTER-SMOOTH CUSHIONED GLIDE ANIMATIONS */
+        /* FULL VIEWPORT (100vw) OFF-SCREEN GLIDE ANIMATIONS */
         @keyframes exitToLeft {
             0% { transform: translate3d(0, 0, 0); opacity: 1; }
-            100% { transform: translate3d(-105vw, 0, 0); opacity: 0; }
+            100% { transform: translate3d(-100vw, 0, 0); opacity: 0; }
         }
 
         @keyframes exitToRight {
             0% { transform: translate3d(0, 0, 0); opacity: 1; }
-            100% { transform: translate3d(105vw, 0, 0); opacity: 0; }
+            100% { transform: translate3d(100vw, 0, 0); opacity: 0; }
         }
 
         @keyframes enterFromRight {
-            0% { transform: translate3d(105vw, 0, 0); opacity: 0; }
+            0% { transform: translate3d(100vw, 0, 0); opacity: 0; }
             100% { transform: translate3d(0, 0, 0); opacity: 1; }
         }
 
         @keyframes enterFromLeft {
-            0% { transform: translate3d(-105vw, 0, 0); opacity: 0; }
+            0% { transform: translate3d(-100vw, 0, 0); opacity: 0; }
             100% { transform: translate3d(0, 0, 0); opacity: 1; }
         }
 
         .slide-exit-left {
-            animation: exitToLeft var(--slide-exit-dur) cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+            animation: exitToLeft 0.28s cubic-bezier(0.4, 0, 1, 1) forwards !important;
             visibility: visible !important;
         }
 
         .slide-exit-right {
-            animation: exitToRight var(--slide-exit-dur) cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+            animation: exitToRight 0.28s cubic-bezier(0.4, 0, 1, 1) forwards !important;
             visibility: visible !important;
         }
 
         .slide-enter-right {
-            animation: enterFromRight var(--slide-enter-dur) cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+            animation: enterFromRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
             visibility: visible !important;
             pointer-events: auto !important;
         }
 
         .slide-enter-left {
-            animation: enterFromLeft var(--slide-enter-dur) cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+            animation: enterFromLeft 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
             visibility: visible !important;
             pointer-events: auto !important;
         }
@@ -1137,7 +1130,7 @@
             resetAnimationState();
         }
 
-        function updateDayLine(activePill, durationMs = 480) {
+        function updateDayLine(activePill, durationMs = 380) {
             const line = document.getElementById('dayActiveLine');
             const capsule = document.getElementById('daySwitcher');
             if (!line || !activePill || !capsule) return;
@@ -1201,7 +1194,7 @@
             }
         }
 
-        // OPTION B DIRECTIONAL MOTION ENGINE (DEFERRED CALCULATIONS FOR BUTTER-SMOOTH MOTION)
+        // OPTION B DIRECTIONAL MOTION ENGINE (CARD GLIDES COMPLETELY OFF DEVICE SCREEN EDGES)
         function selectDay(targetDayIdx, isInitial = false) {
             if (isSwitchingDay && !isInitial) return;
             if (targetDayIdx === currentSelectedDay && !isInitial) return;
@@ -1218,7 +1211,7 @@
             });
 
             if (activePillEl) {
-                updateDayLine(activePillEl, isInitial ? 0 : 480);
+                updateDayLine(activePillEl, isInitial ? 0 : 380);
             }
 
             const allCards = document.querySelectorAll('.day-card-slide');
@@ -1237,7 +1230,7 @@
 
             isSwitchingDay = true;
 
-            // Follow pill highlight movement direction across device edges
+            // OPTION B DIRECTION: Follow pill highlight movement direction
             const exitClass = isGoingRight ? 'slide-exit-right' : 'slide-exit-left';
             const enterClass = isGoingRight ? 'slide-enter-left' : 'slide-enter-right';
 
@@ -1245,7 +1238,7 @@
             oldCard.classList.remove('is-active');
             oldCard.classList.add(exitClass);
 
-            // 2. Staged entry: soft interval before new card enters from device screen edge
+            // 2. Staged entry: brief empty interval before new card enters from outer device edge
             setTimeout(() => {
                 allCards.forEach(c => {
                     if (c !== oldCard && c !== newCard) {
@@ -1255,20 +1248,17 @@
 
                 newCard.classList.add(enterClass);
 
-                // Clean up classes & trigger deferred nutrient calculations AFTER slide reaches rest state
                 setTimeout(() => {
                     oldCard.classList.remove('slide-exit-left', 'slide-exit-right');
                     newCard.classList.remove('slide-enter-left', 'slide-enter-right');
                     newCard.classList.add('is-active');
-
-                    // DEFERRED COMPUTATION: Zero thread blocking during slide motion
-                    recalculateTotals();
-                    resetAnimationState();
-
                     isSwitchingDay = false;
-                }, 540);
+                }, 350);
 
-            }, 120);
+            }, 100);
+
+            recalculateTotals();
+            resetAnimationState();
         }
 
         document.querySelectorAll('.day-pill').forEach(pill => {
