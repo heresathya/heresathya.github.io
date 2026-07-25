@@ -463,6 +463,7 @@
 
         .macro-val { color: var(--text-muted); font-size: 13px; transition: color 0.8s var(--ease-smooth); }
         
+        /* FULLY SYMMETRIC BIDIRECTIONAL WIPE & MORPH BADGE */
         .macro-badge {
             padding: 2px 8px;
             border-radius: 12px;
@@ -480,27 +481,42 @@
                         color 0.35s var(--ease-smooth), 
                         min-width 0.35s var(--ease-smooth),
                         width 0.35s var(--ease-smooth),
+                        padding 0.35s var(--ease-smooth),
                         border-radius 0.35s var(--ease-smooth);
         }
 
+        /* PERCENTAGE TEXT: WIPES LEFT-TO-RIGHT ON ENTRY, WIPES BACK RIGHT-TO-LEFT ON EXIT */
         .badge-txt-span {
             display: inline-block;
             white-space: nowrap;
-            transition: opacity 0.3s ease;
+            opacity: 1;
+            transform: scale(1);
+            max-width: 50px;
+            clip-path: inset(0 0 0 0);
+            transition: opacity 0.25s var(--ease-smooth),
+                        transform 0.35s var(--ease-smooth),
+                        max-width 0.35s var(--ease-smooth),
+                        clip-path 0.35s var(--ease-smooth);
         }
 
-        /* SMOOTH ZERO-SHAKE TICK POP ANIMATION */
-        @keyframes tickPopIn {
-            0% {
-                transform: scale(0.3);
-                opacity: 0;
-            }
-            100% {
-                transform: scale(1);
-                opacity: 1;
-            }
+        /* TICK SVG: APPEARS SMOOTHLY ON ENTRY, CONTRACTS ON EXIT */
+        .badge-tick-svg {
+            width: 0px;
+            height: 13px;
+            stroke: #ffffff;
+            stroke-width: 3.5;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            opacity: 0;
+            transform: scale(0);
+            transition: opacity 0.25s var(--ease-smooth),
+                        transform 0.35s var(--ease-smooth),
+                        width 0.35s var(--ease-smooth);
+            flex-shrink: 0;
         }
 
+        /* 100% COMPLETED BADGE OVERRIDES */
         .macro-badge.completed-badge {
             min-width: 22px !important;
             width: 22px !important;
@@ -509,15 +525,17 @@
             padding: 0 !important;
         }
 
-        .macro-badge.completed-badge svg {
+        .macro-badge.completed-badge .badge-txt-span {
+            opacity: 0;
+            transform: scale(0.5);
+            max-width: 0px;
+            clip-path: inset(0 0 0 100%);
+        }
+
+        .macro-badge.completed-badge .badge-tick-svg {
+            opacity: 1;
+            transform: scale(1);
             width: 13px;
-            height: 13px;
-            stroke: #ffffff;
-            stroke-width: 3.5;
-            fill: none;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            animation: tickPopIn 0.35s var(--ease-smooth) forwards;
         }
 
         .progress-track {
@@ -686,13 +704,13 @@
                 </h2>
             </div>
             <div class="macros-grid" id="macroGrid">
-                <div class="macro-card"><div class="macro-top-label"><span>Calories</span><span class="macro-badge" id="calBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="calVal">0 / 2200 kcal</div><div class="progress-track"><div class="progress-fill" id="calBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Protein</span><span class="macro-badge" id="proteinBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="proteinVal">0 gms / 100 gms</div><div class="progress-track"><div class="progress-fill" id="proteinBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Fiber</span><span class="macro-badge" id="fiberBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="fiberVal">0 gms / 40 gms</div><div class="progress-track"><div class="progress-fill" id="fiberBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Carbohydrates</span><span class="macro-badge" id="carbsBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="carbsVal">0 gms / 300 gms</div><div class="progress-track"><div class="progress-fill" id="carbsBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Total Fat</span><span class="macro-badge" id="fatBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="fatVal">0 gms / 78 gms</div><div class="progress-track"><div class="progress-fill" id="fatBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Sugars</span><span class="macro-badge" id="sugarsBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="sugarsVal">0 gms / < 25 gms</div><div class="progress-track"><div class="progress-fill" id="sugarsBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Sugar (Lactose)</span><span class="macro-badge" id="lactoseBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="lactoseVal">0 gms / < 25 gms</div><div class="progress-track"><div class="progress-fill" id="lactoseBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Calories</span><span class="macro-badge" id="calBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="calVal">0 / 2200 kcal</div><div class="progress-track"><div class="progress-fill" id="calBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Protein</span><span class="macro-badge" id="proteinBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="proteinVal">0 gms / 100 gms</div><div class="progress-track"><div class="progress-fill" id="proteinBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Fiber</span><span class="macro-badge" id="fiberBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="fiberVal">0 gms / 40 gms</div><div class="progress-track"><div class="progress-fill" id="fiberBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Carbohydrates</span><span class="macro-badge" id="carbsBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="carbsVal">0 gms / 300 gms</div><div class="progress-track"><div class="progress-fill" id="carbsBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Total Fat</span><span class="macro-badge" id="fatBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="fatVal">0 gms / 78 gms</div><div class="progress-track"><div class="progress-fill" id="fatBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Sugars</span><span class="macro-badge" id="sugarsBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="sugarsVal">0 gms / < 25 gms</div><div class="progress-track"><div class="progress-fill" id="sugarsBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Sugar (Lactose)</span><span class="macro-badge" id="lactoseBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="lactoseVal">0 gms / < 25 gms</div><div class="progress-track"><div class="progress-fill" id="lactoseBar"></div></div></div>
             </div>
         </div>
 
@@ -707,14 +725,14 @@
                 </h2>
             </div>
             <div class="macros-grid" id="fatsGrid">
-                <div class="macro-card"><div class="macro-top-label"><span>Saturated Fat (SFA)</span><span class="macro-badge" id="sfaBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="sfaVal">0 gms / 20 gms</div><div class="progress-track"><div class="progress-fill" id="sfaBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Unsaturated Fat</span><span class="macro-badge" id="unsatBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="unsatVal">0 gms / 50 gms</div><div class="progress-track"><div class="progress-fill" id="unsatBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Monounsaturated (MUFA)</span><span class="macro-badge" id="mufaBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="mufaVal">0 gms / 30 gms</div><div class="progress-track"><div class="progress-fill" id="mufaBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Polyunsaturated (PUFA)</span><span class="macro-badge" id="pufaBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="pufaVal">0 gms / 20 gms</div><div class="progress-track"><div class="progress-fill" id="pufaBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Omega-3 (ALA)</span><span class="macro-badge" id="alaBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="alaVal">0 gms / 1.6 gms</div><div class="progress-track"><div class="progress-fill" id="alaBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Omega-3 (EPA)</span><span class="macro-badge" id="epaBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="epaVal">0 gms / 0.25 gms</div><div class="progress-track"><div class="progress-fill" id="epaBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Omega-3 (DHA)</span><span class="macro-badge" id="dhaBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="dhaVal">0 gms / 0.25 gms</div><div class="progress-track"><div class="progress-fill" id="dhaBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Omega-6</span><span class="macro-badge" id="o6Badge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="o6Val">0 gms / 17 gms</div><div class="progress-track"><div class="progress-fill" id="o6Bar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Saturated Fat (SFA)</span><span class="macro-badge" id="sfaBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="sfaVal">0 gms / 20 gms</div><div class="progress-track"><div class="progress-fill" id="sfaBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Unsaturated Fat</span><span class="macro-badge" id="unsatBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="unsatVal">0 gms / 50 gms</div><div class="progress-track"><div class="progress-fill" id="unsatBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Monounsaturated (MUFA)</span><span class="macro-badge" id="mufaBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="mufaVal">0 gms / 30 gms</div><div class="progress-track"><div class="progress-fill" id="mufaBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Polyunsaturated (PUFA)</span><span class="macro-badge" id="pufaBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="pufaVal">0 gms / 20 gms</div><div class="progress-track"><div class="progress-fill" id="pufaBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Omega-3 (ALA)</span><span class="macro-badge" id="alaBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="alaVal">0 gms / 1.6 gms</div><div class="progress-track"><div class="progress-fill" id="alaBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Omega-3 (EPA)</span><span class="macro-badge" id="epaBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="epaVal">0 gms / 0.25 gms</div><div class="progress-track"><div class="progress-fill" id="epaBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Omega-3 (DHA)</span><span class="macro-badge" id="dhaBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="dhaVal">0 gms / 0.25 gms</div><div class="progress-track"><div class="progress-fill" id="dhaBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Omega-6</span><span class="macro-badge" id="o6Badge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="o6Val">0 gms / 17 gms</div><div class="progress-track"><div class="progress-fill" id="o6Bar"></div></div></div>
             </div>
         </div>
 
@@ -729,8 +747,8 @@
                 </h2>
             </div>
             <div class="macros-grid" id="carotenoidsGrid">
-                <div class="macro-card"><div class="macro-top-label"><span>Beta-Carotene</span><span class="macro-badge" id="bCaroteneBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="bCaroteneVal">0 mcg / 4800 mcg</div><div class="progress-track"><div class="progress-fill" id="bCaroteneBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Alpha-Carotene</span><span class="macro-badge" id="aCaroteneBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="aCaroteneVal">0 mcg / N/A</div><div class="progress-track"><div class="progress-fill" id="aCaroteneBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Beta-Carotene</span><span class="macro-badge" id="bCaroteneBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="bCaroteneVal">0 mcg / 4800 mcg</div><div class="progress-track"><div class="progress-fill" id="bCaroteneBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Alpha-Carotene</span><span class="macro-badge" id="aCaroteneBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="aCaroteneVal">0 mcg / N/A</div><div class="progress-track"><div class="progress-fill" id="aCaroteneBar"></div></div></div>
             </div>
         </div>
 
@@ -745,19 +763,19 @@
                 </h2>
             </div>
             <div class="macros-grid" id="vitaminsGrid">
-                <div class="macro-card"><div class="macro-top-label"><span>Vitamin A</span><span class="macro-badge" id="vitABadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="vitAVal">0 mcg / 900 mcg</div><div class="progress-track"><div class="progress-fill" id="vitABar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Vitamin B1 (Thiamine)</span><span class="macro-badge" id="vitB1Badge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="vitB1Val">0 mg / 1.2 mg</div><div class="progress-track"><div class="progress-fill" id="vitB1Bar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Vitamin B2 (Riboflavin)</span><span class="macro-badge" id="vitB2Badge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="vitB2Val">0 mg / 1.3 mg</div><div class="progress-track"><div class="progress-fill" id="vitB2Bar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Vitamin B3 (Niacin)</span><span class="macro-badge" id="vitB3Badge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="vitB3Val">0 mg / 16 mg</div><div class="progress-track"><div class="progress-fill" id="vitB3Bar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Vitamin B5 (Pantothenic)</span><span class="macro-badge" id="vitB5Badge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="vitB5Val">0 mg / 5 mg</div><div class="progress-track"><div class="progress-fill" id="vitB5Bar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Vitamin B6</span><span class="macro-badge" id="vitB6Badge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="vitB6Val">0 mg / 1.3 mg</div><div class="progress-track"><div class="progress-fill" id="vitB6Bar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Vitamin B7 (Biotin)</span><span class="macro-badge" id="vitB7Badge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="vitB7Val">0 mcg / 30 mcg</div><div class="progress-track"><div class="progress-fill" id="vitB7Bar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Vitamin B9 (Folate)</span><span class="macro-badge" id="vitB9Badge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="vitB9Val">0 mcg / 400 mcg</div><div class="progress-track"><div class="progress-fill" id="vitB9Bar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Vitamin B12</span><span class="macro-badge" id="vitB12Badge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="vitB12Val">0 mcg / 2.4 mcg</div><div class="progress-track"><div class="progress-fill" id="vitB12Bar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Vitamin C</span><span class="macro-badge" id="vitCBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="vitCVal">0 mg / 90 mg</div><div class="progress-track"><div class="progress-fill" id="vitCBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Vitamin D</span><span class="macro-badge" id="vitDBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="vitDVal">0 mcg / 15 mcg</div><div class="progress-track"><div class="progress-fill" id="vitDBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Vitamin E</span><span class="macro-badge" id="vitEBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="vitEVal">0 mg / 15 mg</div><div class="progress-track"><div class="progress-fill" id="vitEBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Vitamin K</span><span class="macro-badge" id="vitKBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="vitKVal">0 mcg / 120 mcg</div><div class="progress-track"><div class="progress-fill" id="vitKBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Vitamin A</span><span class="macro-badge" id="vitABadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="vitAVal">0 mcg / 900 mcg</div><div class="progress-track"><div class="progress-fill" id="vitABar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Vitamin B1 (Thiamine)</span><span class="macro-badge" id="vitB1Badge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="vitB1Val">0 mg / 1.2 mg</div><div class="progress-track"><div class="progress-fill" id="vitB1Bar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Vitamin B2 (Riboflavin)</span><span class="macro-badge" id="vitB2Badge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="vitB2Val">0 mg / 1.3 mg</div><div class="progress-track"><div class="progress-fill" id="vitB2Bar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Vitamin B3 (Niacin)</span><span class="macro-badge" id="vitB3Badge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="vitB3Val">0 mg / 16 mg</div><div class="progress-track"><div class="progress-fill" id="vitB3Bar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Vitamin B5 (Pantothenic)</span><span class="macro-badge" id="vitB5Badge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="vitB5Val">0 mg / 5 mg</div><div class="progress-track"><div class="progress-fill" id="vitB5Bar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Vitamin B6</span><span class="macro-badge" id="vitB6Badge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="vitB6Val">0 mg / 1.3 mg</div><div class="progress-track"><div class="progress-fill" id="vitB6Bar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Vitamin B7 (Biotin)</span><span class="macro-badge" id="vitB7Badge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="vitB7Val">0 mcg / 30 mcg</div><div class="progress-track"><div class="progress-fill" id="vitB7Bar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Vitamin B9 (Folate)</span><span class="macro-badge" id="vitB9Badge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="vitB9Val">0 mcg / 400 mcg</div><div class="progress-track"><div class="progress-fill" id="vitB9Bar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Vitamin B12</span><span class="macro-badge" id="vitB12Badge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="vitB12Val">0 mcg / 2.4 mcg</div><div class="progress-track"><div class="progress-fill" id="vitB12Bar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Vitamin C</span><span class="macro-badge" id="vitCBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="vitCVal">0 mg / 90 mg</div><div class="progress-track"><div class="progress-fill" id="vitCBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Vitamin D</span><span class="macro-badge" id="vitDBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="vitDVal">0 mcg / 15 mcg</div><div class="progress-track"><div class="progress-fill" id="vitDBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Vitamin E</span><span class="macro-badge" id="vitEBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="vitEVal">0 mg / 15 mg</div><div class="progress-track"><div class="progress-fill" id="vitEBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Vitamin K</span><span class="macro-badge" id="vitKBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="vitKVal">0 mcg / 120 mcg</div><div class="progress-track"><div class="progress-fill" id="vitKBar"></div></div></div>
             </div>
         </div>
 
@@ -772,13 +790,13 @@
                 </h2>
             </div>
             <div class="macros-grid" id="macroMineralsGrid">
-                <div class="macro-card"><div class="macro-top-label"><span>Calcium</span><span class="macro-badge" id="calciumBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="calciumVal">0 mg / 1000 mg</div><div class="progress-track"><div class="progress-fill" id="calciumBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Phosphorus</span><span class="macro-badge" id="pBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="pVal">0 mg / 700 mg</div><div class="progress-track"><div class="progress-fill" id="pBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Magnesium</span><span class="macro-badge" id="mgBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="mgVal">0 mg / 420 mg</div><div class="progress-track"><div class="progress-fill" id="mgBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Sodium</span><span class="macro-badge" id="naBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="naVal">0 mg / < 2000 mg</div><div class="progress-track"><div class="progress-fill" id="naBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Potassium</span><span class="macro-badge" id="potassiumBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="potassiumVal">0 mg / 3500 mg</div><div class="progress-track"><div class="progress-fill" id="potassiumBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Chloride</span><span class="macro-badge" id="clBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="clVal">0 mg / 2300 mg</div><div class="progress-track"><div class="progress-fill" id="clBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Sulphur</span><span class="macro-badge" id="sBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="sVal">0 mg / 1000 mg</div><div class="progress-track"><div class="progress-fill" id="sBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Calcium</span><span class="macro-badge" id="calciumBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="calciumVal">0 mg / 1000 mg</div><div class="progress-track"><div class="progress-fill" id="calciumBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Phosphorus</span><span class="macro-badge" id="pBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="pVal">0 mg / 700 mg</div><div class="progress-track"><div class="progress-fill" id="pBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Magnesium</span><span class="macro-badge" id="mgBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="mgVal">0 mg / 420 mg</div><div class="progress-track"><div class="progress-fill" id="mgBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Sodium</span><span class="macro-badge" id="naBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="naVal">0 mg / < 2000 mg</div><div class="progress-track"><div class="progress-fill" id="naBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Potassium</span><span class="macro-badge" id="potassiumBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="potassiumVal">0 mg / 3500 mg</div><div class="progress-track"><div class="progress-fill" id="potassiumBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Chloride</span><span class="macro-badge" id="clBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="clVal">0 mg / 2300 mg</div><div class="progress-track"><div class="progress-fill" id="clBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Sulphur</span><span class="macro-badge" id="sBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="sVal">0 mg / 1000 mg</div><div class="progress-track"><div class="progress-fill" id="sBar"></div></div></div>
             </div>
         </div>
 
@@ -793,15 +811,15 @@
                 </h2>
             </div>
             <div class="macros-grid" id="traceMineralsGrid">
-                <div class="macro-card"><div class="macro-top-label"><span>Iron</span><span class="macro-badge" id="ironBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="ironVal">0 mg / 8 mg</div><div class="progress-track"><div class="progress-fill" id="ironBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Zinc</span><span class="macro-badge" id="zincBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="zincVal">0 mg / 11 mg</div><div class="progress-track"><div class="progress-fill" id="zincBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Iodine</span><span class="macro-badge" id="iodineBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="iodineVal">0 mcg / 150 mcg</div><div class="progress-track"><div class="progress-fill" id="iodineBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Manganese</span><span class="macro-badge" id="mnBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="mnVal">0 mg / 2.3 mg</div><div class="progress-track"><div class="progress-fill" id="mnBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Selenium</span><span class="macro-badge" id="seBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="seVal">0 mcg / 55 mcg</div><div class="progress-track"><div class="progress-fill" id="seBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Copper</span><span class="macro-badge" id="cuBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="cuVal">0 mcg / 900 mcg</div><div class="progress-track"><div class="progress-fill" id="cuBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Fluoride</span><span class="macro-badge" id="fBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="fVal">0 mcg / 4000 mcg</div><div class="progress-track"><div class="progress-fill" id="fBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Chromium</span><span class="macro-badge" id="crBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="crVal">0 mcg / 35 mcg</div><div class="progress-track"><div class="progress-fill" id="crBar"></div></div></div>
-                <div class="macro-card"><div class="macro-top-label"><span>Molybdenum</span><span class="macro-badge" id="moBadge"><span class="badge-txt-span">0%</span></span></div><div class="macro-val" id="moVal">0 mcg / 45 mcg</div><div class="progress-track"><div class="progress-fill" id="moBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Iron</span><span class="macro-badge" id="ironBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="ironVal">0 mg / 8 mg</div><div class="progress-track"><div class="progress-fill" id="ironBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Zinc</span><span class="macro-badge" id="zincBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="zincVal">0 mg / 11 mg</div><div class="progress-track"><div class="progress-fill" id="zincBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Iodine</span><span class="macro-badge" id="iodineBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="iodineVal">0 mcg / 150 mcg</div><div class="progress-track"><div class="progress-fill" id="iodineBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Manganese</span><span class="macro-badge" id="mnBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="mnVal">0 mg / 2.3 mg</div><div class="progress-track"><div class="progress-fill" id="mnBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Selenium</span><span class="macro-badge" id="seBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="seVal">0 mcg / 55 mcg</div><div class="progress-track"><div class="progress-fill" id="seBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Copper</span><span class="macro-badge" id="cuBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="cuVal">0 mcg / 900 mcg</div><div class="progress-track"><div class="progress-fill" id="cuBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Fluoride</span><span class="macro-badge" id="fBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="fVal">0 mcg / 4000 mcg</div><div class="progress-track"><div class="progress-fill" id="fBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Chromium</span><span class="macro-badge" id="crBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="crVal">0 mcg / 35 mcg</div><div class="progress-track"><div class="progress-fill" id="crBar"></div></div></div>
+                <div class="macro-card"><div class="macro-top-label"><span>Molybdenum</span><span class="macro-badge" id="moBadge"><span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></div><div class="macro-val" id="moVal">0 mcg / 45 mcg</div><div class="progress-track"><div class="progress-fill" id="moBar"></div></div></div>
             </div>
         </div>
     </main>
@@ -1221,6 +1239,15 @@
 
             if (!valEl || !barEl || !badgeEl) return;
 
+            let txtSpan = badgeEl.querySelector('.badge-txt-span');
+            let tickSvg = badgeEl.querySelector('.badge-tick-svg');
+
+            if (!txtSpan || !tickSvg) {
+                badgeEl.innerHTML = `<span class="badge-txt-span">0%</span><svg class="badge-tick-svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+                txtSpan = badgeEl.querySelector('.badge-txt-span');
+                tickSvg = badgeEl.querySelector('.badge-tick-svg');
+            }
+
             // SPECIAL ALPHA-CAROTENE N/A HANDLING
             if (isAlphaCarotene) {
                 const formattedVal = val.toFixed(val % 1 ? (val < 1 ? 2 : 1) : 0);
@@ -1228,20 +1255,16 @@
                 if (val > 0) {
                     barEl.style.width = '100%';
                     barEl.style.backgroundColor = '#34a853';
-                    if (!badgeEl.classList.contains('completed-badge')) {
-                        badgeEl.className = 'macro-badge completed-badge';
-                        badgeEl.innerHTML = `<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-                    }
+                    badgeEl.classList.add('completed-badge');
                     badgeEl.style.backgroundColor = '#34a853';
                     badgeEl.style.color = '#ffffff';
                 } else {
                     barEl.style.width = '0%';
                     barEl.style.backgroundColor = '#34a853';
-                    badgeEl.className = 'macro-badge';
+                    badgeEl.classList.remove('completed-badge');
                     badgeEl.style.backgroundColor = hexToRgba('#34a853', 0.15);
                     badgeEl.style.color = '#34a853';
-                    badgeEl.style.padding = '2px 8px';
-                    badgeEl.innerHTML = `<span class="badge-txt-span">0%</span>`;
+                    txtSpan.innerText = '0%';
                 }
                 return;
             }
@@ -1255,20 +1278,16 @@
 
             if (pct >= 100) {
                 barEl.style.width = '100%';
-                // Insert checkmark SVG ONLY IF NOT ALREADY COMPLETED to prevent inner tick shake on re-renders
-                if (!badgeEl.classList.contains('completed-badge')) {
-                    badgeEl.className = 'macro-badge completed-badge';
-                    badgeEl.innerHTML = `<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-                }
+                badgeEl.classList.add('completed-badge');
                 badgeEl.style.backgroundColor = barColor;
                 badgeEl.style.color = '#ffffff';
+                txtSpan.innerText = '100%';
             } else {
                 barEl.style.width = `${pct}%`;
-                badgeEl.className = 'macro-badge';
+                badgeEl.classList.remove('completed-badge');
                 badgeEl.style.backgroundColor = hexToRgba(barColor, 0.15);
                 badgeEl.style.color = barColor;
-                badgeEl.style.padding = '2px 8px';
-                badgeEl.innerHTML = `<span class="badge-txt-span">${pct}%</span>`;
+                txtSpan.innerText = `${pct}%`;
             }
         }
 
