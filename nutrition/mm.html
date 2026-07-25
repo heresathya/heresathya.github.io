@@ -1044,23 +1044,23 @@
         const nutrientStateStore = {};
         const animatedCapsules = new Set();
 
-        // LOCALSTORAGE PERSISTENCE ENGINE (PER-DAY CHECKLIST MEMORY THAT NEVER WIPES ON REFRESH)
+        // FRESH LOCALSTORAGE NAMESPACE ENGINE (CLEARS GHOST DATA & PERSISTS MULTI-DAY TRACKING PERMANENTLY)
         function saveChecklistState() {
             const checkboxes = document.querySelectorAll('#foodGrid input[type="checkbox"]');
             const checkedIndices = [];
             checkboxes.forEach((cb, idx) => {
                 if (cb.checked) checkedIndices.push(idx);
             });
-            localStorage.setItem(`meal_checklist_day_${currentSelectedDay}`, JSON.stringify(checkedIndices));
+            localStorage.setItem(`meal_v3_day_${currentSelectedDay}`, JSON.stringify(checkedIndices));
         }
 
         function loadChecklistState(dayIdx) {
-            const saved = localStorage.getItem(`meal_checklist_day_${dayIdx}`);
-            if (saved === null) return null; // Unvisited days return null -> default to unticked
+            const saved = localStorage.getItem(`meal_v3_day_${dayIdx}`);
+            if (!saved) return []; // Default to empty array -> ALL UNTICKED
             try {
                 return JSON.parse(saved);
             } catch (e) {
-                return null;
+                return [];
             }
         }
 
@@ -1109,8 +1109,7 @@
             const savedCheckedIndices = loadChecklistState(dayIdx);
 
             todayItems.forEach((item, idx) => {
-                // If unvisited day (null), default to FALSE (unticked list). If saved state exists, use saved checks!
-                const isChecked = savedCheckedIndices !== null ? savedCheckedIndices.includes(idx) : false;
+                const isChecked = savedCheckedIndices.includes(idx);
                 const label = document.createElement('label');
                 label.className = 'food-item-checkbox';
                 label.innerHTML = `
