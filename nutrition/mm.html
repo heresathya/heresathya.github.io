@@ -741,7 +741,7 @@
                      <span class="icon-box">
                   <img src="https://github.com/minsathya/minsathya.github.io/blob/main/nutrition/images/macros.png?raw=true" class="capsule-icon" width="70" height="70" alt="Macro Minerals">
                      </span>
-                         Macronutrients & energy
+                        Macronutrients & energy
                 </h2>
             </div>
             <div class="macros-grid" id="macroGrid">
@@ -1044,18 +1044,18 @@
         const nutrientStateStore = {};
         const animatedCapsules = new Set();
 
-        // FRESH LOCALSTORAGE NAMESPACE ENGINE (CLEARS GHOST DATA & PERSISTS MULTI-DAY TRACKING PERMANENTLY)
+        // SESSIONSTORAGE NAMESPACE ENGINE (STARTS FRESH & UNTICKED ON NEW SESSION)
         function saveChecklistState() {
             const checkboxes = document.querySelectorAll('#foodGrid input[type="checkbox"]');
             const checkedIndices = [];
             checkboxes.forEach((cb, idx) => {
                 if (cb.checked) checkedIndices.push(idx);
             });
-            localStorage.setItem(`meal_v3_day_${currentSelectedDay}`, JSON.stringify(checkedIndices));
+            sessionStorage.setItem(`meal_v3_day_${currentSelectedDay}`, JSON.stringify(checkedIndices));
         }
 
         function loadChecklistState(dayIdx) {
-            const saved = localStorage.getItem(`meal_v3_day_${dayIdx}`);
+            const saved = sessionStorage.getItem(`meal_v3_day_${dayIdx}`);
             if (!saved) return []; // Default to empty array -> ALL UNTICKED
             try {
                 return JSON.parse(saved);
