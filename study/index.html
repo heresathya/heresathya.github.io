@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>sathya.</title>
-
     <meta name="description" content="This is my personal space for UPSC CSE. You can also read these pages where I have categorised everything about Upsc.">
     <meta name="keywords" content="UPSC, Civil Services Exam, Current Affairs, UPSC notes, Polity, Geography, History notes, Daily current affairs, Today current affairs.">
-
+    
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-5VGX2K64Y4"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -18,7 +17,6 @@
     
     <!-- Relative paths for files inside /study/ -->
     <link id="favicon" rel="icon" type="image/png" href="../favicon-light.png">
-
     <script>
       const favicon = document.getElementById('favicon');
       const darkMode = window.matchMedia('(prefers-color-scheme: dark)');
@@ -34,6 +32,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
         :root {
             /* Smooth gradual 0.55s easing curve */
@@ -112,21 +111,52 @@
         .capsule-panel:nth-child(6) { animation-delay: 0.44s; }
         footer { animation-delay: 0.52s; }
 
+        /* HEADER BASE */
         header {
             position: relative;
             background-color: var(--header-bg);
             border: 1px solid var(--header-border);
-            border-radius: 50px;
+            border-radius: 28px;
             width: 100%;
             height: 72px;
             margin: 0 auto 80px auto;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.02);
             overflow: hidden;
-            transition: background-color 0.8s var(--ease-smooth), border-color 0.8s var(--ease-smooth), box-shadow 0.8s var(--ease-smooth);
+            touch-action: manipulation;
+            
+            will-change: transform, box-shadow, border-color;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            -webkit-transform-style: preserve-3d;
+            transform-style: preserve-3d;
+            
+            /* Always smooth 0.55s curve for both lifting up & recoiling back down */
+            transition: transform 0.55s var(--ease-smooth), 
+                        box-shadow 0.55s var(--ease-smooth), 
+                        border-color 0.55s var(--ease-smooth), 
+                        background-color 0.8s var(--ease-smooth);
         }
 
         body:not(.light-mode) header {
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        /* NATIVE REPEATABLE 3D LIFT ON HOVER, FOCUS, TAP, OR CLICK */
+        header:hover,
+        header:focus-within,
+        header:active,
+        header.is-header-lifted {
+            transform: translate3d(0, -6px, 0) scale3d(1.015, 1.015, 1);
+            border-color: #1E1E1E;
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
+        }
+
+        body.light-mode header:hover,
+        body.light-mode header:focus-within,
+        body.light-mode header:active,
+        body.light-mode header.is-header-lifted {
+            border-color: #b8b8bc;
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.09);
         }
 
         .header-inner-view {
@@ -322,7 +352,6 @@
             -webkit-transform-style: preserve-3d;
             transform-style: preserve-3d;
             
-            /* Gentle 0.55s cubic-bezier curve for opening & falling back */
             transition: transform 0.55s var(--ease-smooth), 
                         box-shadow 0.55s var(--ease-smooth), 
                         border-color 0.55s var(--ease-smooth), 
@@ -330,30 +359,23 @@
         }
 
         body:not(.light-mode) .capsule-panel { box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4); }
-        
-        /* Laptop Mouse Hover */
-        @media (hover: hover) and (pointer: fine) {
-            .capsule-panel:hover { 
-                border-color: #1E1E1E; 
-                transform: translate3d(0, -6px, 0) scale3d(1.02, 1.02, 1); 
-                box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
-            }
-            body.light-mode .capsule-panel:hover { 
-                border-color: #b8b8bc; 
-                box-shadow: 0 16px 32px rgba(0, 0, 0, 0.09);
-            }
-        }
 
-        /* Dedicated Elevation Lock Class for Touchscreens (iPad / Phone) */
+        /* NATIVE REPEATABLE 3D LIFT FOR CAPSULES */
+        .capsule-panel:hover,
+        .capsule-panel:focus-within,
+        .capsule-panel:active,
         .capsule-panel.is-panel-lifted {
-            transform: translate3d(0, -6px, 0) scale3d(1.02, 1.02, 1) !important;
-            border-color: #1E1E1E !important;
-            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45) !important;
+            transform: translate3d(0, -6px, 0) scale3d(1.02, 1.02, 1);
+            border-color: #1E1E1E;
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
         }
 
+        body.light-mode .capsule-panel:hover,
+        body.light-mode .capsule-panel:focus-within,
+        body.light-mode .capsule-panel:active,
         body.light-mode .capsule-panel.is-panel-lifted {
-            border-color: #b8b8bc !important;
-            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.09) !important;
+            border-color: #b8b8bc;
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.09);
         }
 
         .panel-title {
@@ -423,7 +445,7 @@
             .matrix-canvas { grid-template-columns: 1fr; gap: 24px; }
             .capsule-panel { padding: 28px 4px 12px 4px; }
             body { padding: 40px 20px; }
-            header { margin-bottom: 40px; height: 64px; }
+            header { margin-bottom: 40px; height: 64px; border-radius: 24px; }
             .header-inner-view { padding: 0 20px; }
             .logo { font-size: 22px; }
             .search-core-input { padding: 0 12px; font-size: 15px; }
@@ -513,7 +535,6 @@
     </style>
 </head>
 <body>
-
     <header id="masterHeader">
         <div class="header-inner-view" id="headerMainView">
             <a href="/study/index.html" class="logo">sathya.</a>
@@ -532,14 +553,11 @@
                 </button>
             </div>
         </div>
-
         <form class="header-inner-view" id="headerSearchView" action="/study/search.html" method="GET">
             <button type="submit" aria-label="Submit search" style="background: none; border: none; padding: 0; margin: 0; cursor: pointer; color: inherit; display: flex; align-items: center; justify-content: center;">
                 <svg class="search-static-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
             </button>
-
             <input type="text" class="search-core-input" id="searchCoreInput" name="q" placeholder="Search..." autocomplete="off" enterkeyhint="search">
-            
             <div class="search-control-cluster">
                 <button type="button" class="ctrl-btn clear-text-btn" id="clearSearchBtn" aria-label="Clear typed text">
                     <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -550,7 +568,7 @@
             </div>
         </form>
     </header>
-    
+
     <main>
         <div class="matrix-canvas">
             <div class="capsule-panel">
@@ -562,7 +580,6 @@
                     <li><a href="/study/currentaffairs.html">Current affairs</a></li>
                 </ul>
             </div>
-
             <div class="capsule-panel">
                 <h2 class="panel-title">Current affairs</h2>
                 <ul class="document-list">
@@ -570,7 +587,6 @@
                     <li><a href="#">Topic-wise current affairs</a></li>
                 </ul>
             </div>
-
             <div class="capsule-panel">
                 <h2 class="panel-title">Contents</h2>
                 <ul class="document-list">
@@ -582,7 +598,6 @@
                     <a href="/study/contents.html" class="view-more-link">View more</a>
                 </div>
             </div>
-
             <div class="capsule-panel">
                 <h2 class="panel-title">Must read</h2>
                 <ul class="document-list">
@@ -590,14 +605,12 @@
                     <li><a href="#">Coming up</a></li>
                 </ul>
             </div>
-
             <div class="capsule-panel">
                 <h2 class="panel-title">Chapters</h2>
                 <ul class="document-list">
                     <li><a href="#">Coming up</a></li>
                 </ul>
             </div>
-
             <div class="capsule-panel">
                 <h2 class="panel-title">Essays</h2>
                 <ul class="document-list">
@@ -638,6 +651,77 @@
         const closeSearchBtn = document.getElementById('closeSearchBtn');
         const clearSearchBtn = document.getElementById('clearSearchBtn');
         const searchCoreInput = document.getElementById('searchCoreInput');
+
+        // Helper to handle search state and lift release
+        function handleHeaderLeaveOrBlur(isExplicitClose = false) {
+            const isEmpty = searchCoreInput.value.trim() === "";
+            if (isEmpty || isExplicitClose) {
+                masterHeader.classList.remove('state-search');
+                masterHeader.classList.add('state-main');
+                searchCoreInput.value = "";
+            }
+            searchCoreInput.blur();
+            masterHeader.classList.remove('is-header-lifted');
+        }
+
+        // Tactile Lift Handlers for Header
+        masterHeader.addEventListener('pointerdown', (e) => {
+            masterHeader.classList.add('is-header-lifted');
+            if (masterHeader.classList.contains('state-search')) {
+                if (document.activeElement !== searchCoreInput && e.target !== closeSearchBtn && e.target !== clearSearchBtn) {
+                    searchCoreInput.focus({ preventScroll: true });
+                }
+            }
+        });
+
+        masterHeader.addEventListener('pointerleave', () => {
+            if (searchCoreInput.value.trim() === "") {
+                handleHeaderLeaveOrBlur(false);
+            } else {
+                searchCoreInput.blur();
+                masterHeader.classList.remove('is-header-lifted');
+            }
+        });
+
+        masterHeader.addEventListener('pointerup', () => {
+            if (document.activeElement !== searchCoreInput && !masterHeader.matches(':hover')) {
+                masterHeader.classList.remove('is-header-lifted');
+            }
+        });
+
+        // Tactile Lift Handlers for All Capsule Panels
+        const capsulePanels = document.querySelectorAll('.capsule-panel');
+        capsulePanels.forEach(panel => {
+            panel.addEventListener('pointerdown', () => {
+                if (searchCoreInput.value.trim() === "") {
+                    handleHeaderLeaveOrBlur(false);
+                } else {
+                    searchCoreInput.blur();
+                    masterHeader.classList.remove('is-header-lifted');
+                }
+                panel.classList.add('is-panel-lifted');
+            });
+
+            const releasePanelLift = () => {
+                panel.classList.remove('is-panel-lifted');
+            };
+
+            panel.addEventListener('pointerup', releasePanelLift);
+            panel.addEventListener('pointerleave', releasePanelLift);
+            panel.addEventListener('pointercancel', releasePanelLift);
+        });
+
+        // Global Click-Outside Dismiss
+        document.addEventListener('pointerdown', (e) => {
+            if (!masterHeader.contains(e.target)) {
+                if (searchCoreInput.value.trim() === "") {
+                    handleHeaderLeaveOrBlur(false);
+                } else {
+                    searchCoreInput.blur();
+                    masterHeader.classList.remove('is-header-lifted');
+                }
+            }
+        });
 
         function applyTargetPalette() {
             const activeSessionOverride = sessionStorage.getItem('dashboard-theme');
@@ -682,6 +766,7 @@
         openSearchBtn.addEventListener('click', () => {
             masterHeader.classList.remove('state-main');
             masterHeader.classList.add('state-search');
+            masterHeader.classList.add('is-header-lifted');
             searchCoreInput.focus({ preventScroll: true });
         });
 
@@ -691,14 +776,12 @@
         });
 
         closeSearchBtn.addEventListener('click', () => {
-            masterHeader.classList.remove('state-search');
-            masterHeader.classList.add('state-main');
+            handleHeaderLeaveOrBlur(true);
         });
 
         searchCoreInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && searchCoreInput.value.trim() === "") {
-                masterHeader.classList.remove('state-search');
-                masterHeader.classList.add('state-main');
+                handleHeaderLeaveOrBlur(true);
             }
         });
 
@@ -721,22 +804,17 @@
                 if (!destination || destination === '#' || destination.startsWith('#')) return;
 
                 e.preventDefault();
-
-                // Clear active states across all panels and links
                 document.querySelectorAll('.capsule-panel').forEach(p => p.classList.remove('is-panel-lifted'));
                 universalTargetLinks.forEach(l => l.classList.remove('is-wave-loading'));
 
-                // Lift parent capsule panel if clicked link is inside one
                 const parentPanel = this.closest('.capsule-panel');
                 if (parentPanel) {
                     parentPanel.classList.add('is-panel-lifted');
                 }
 
-                // Trigger wave shimmer animation
                 this.classList.add('is-wave-loading');
                 sessionStorage.setItem('activeUniversalTargetUrl', this.href);
 
-                // Hold for 750ms so wave sweep completes smoothly
                 setTimeout(() => {
                     window.location.href = destination;
                 }, 750);
@@ -748,12 +826,11 @@
                 document.activeElement.blur();
             }
 
-            // DOUBLE-FRAME SYNC FIX: Safari paints elevated panels first,
-            // then smoothly glides them flat over 0.55s when returning to this page
             requestAnimationFrame(() => {
-                document.body.offsetHeight; // Force layout paint frame
+                document.body.offsetHeight;
                 requestAnimationFrame(() => {
                     document.querySelectorAll('.capsule-panel').forEach(p => p.classList.remove('is-panel-lifted'));
+                    masterHeader.classList.remove('is-header-lifted');
                     universalTargetLinks.forEach(l => {
                         l.classList.remove('is-wave-loading');
                         l.classList.remove('kinetic-locked-frame');
