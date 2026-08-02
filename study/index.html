@@ -360,19 +360,30 @@
 
         body:not(.light-mode) .capsule-panel { box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4); }
 
-        /* NATIVE REPEATABLE 3D LIFT FOR CAPSULES */
-        .capsule-panel:hover,
-        .capsule-panel:focus-within,
+        /* Laptop Mouse Hover */
+        @media (hover: hover) and (pointer: fine) {
+            .capsule-panel:hover { 
+                border-color: #1E1E1E; 
+                transform: translate3d(0, -6px, 0) scale3d(1.02, 1.02, 1); 
+                box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
+            }
+            body.light-mode .capsule-panel:hover { 
+                border-color: #b8b8bc; 
+                box-shadow: 0 16px 32px rgba(0, 0, 0, 0.09);
+            }
+        }
+
+        /* Universal Elevation Lock for Capsule Panels */
         .capsule-panel:active,
+        .capsule-panel:focus-within,
         .capsule-panel.is-panel-lifted {
             transform: translate3d(0, -6px, 0) scale3d(1.02, 1.02, 1);
             border-color: #1E1E1E;
             box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
         }
 
-        body.light-mode .capsule-panel:hover,
-        body.light-mode .capsule-panel:focus-within,
         body.light-mode .capsule-panel:active,
+        body.light-mode .capsule-panel:focus-within,
         body.light-mode .capsule-panel.is-panel-lifted {
             border-color: #b8b8bc;
             box-shadow: 0 16px 32px rgba(0, 0, 0, 0.09);
@@ -654,11 +665,14 @@
 
         // Helper to handle search state and lift release
         function handleHeaderLeaveOrBlur(isExplicitClose = false) {
-            const isEmpty = searchCoreInput.value.trim() === "";
-            if (isEmpty || isExplicitClose) {
-                masterHeader.classList.remove('state-search');
-                masterHeader.classList.add('state-main');
-                searchCoreInput.value = "";
+            const isSearchActive = masterHeader.classList.contains('state-search');
+            if (isSearchActive) {
+                const isEmpty = searchCoreInput.value.trim() === "";
+                if (isEmpty || isExplicitClose) {
+                    masterHeader.classList.remove('state-search');
+                    masterHeader.classList.add('state-main');
+                    searchCoreInput.value = "";
+                }
             }
             searchCoreInput.blur();
             masterHeader.classList.remove('is-header-lifted');
@@ -675,7 +689,7 @@
         });
 
         masterHeader.addEventListener('pointerleave', () => {
-            if (searchCoreInput.value.trim() === "") {
+            if (masterHeader.classList.contains('state-search') && searchCoreInput.value.trim() === "") {
                 handleHeaderLeaveOrBlur(false);
             } else {
                 searchCoreInput.blur();
@@ -693,7 +707,7 @@
         const capsulePanels = document.querySelectorAll('.capsule-panel');
         capsulePanels.forEach(panel => {
             panel.addEventListener('pointerdown', () => {
-                if (searchCoreInput.value.trim() === "") {
+                if (masterHeader.classList.contains('state-search') && searchCoreInput.value.trim() === "") {
                     handleHeaderLeaveOrBlur(false);
                 } else {
                     searchCoreInput.blur();
@@ -714,7 +728,7 @@
         // Global Click-Outside Dismiss
         document.addEventListener('pointerdown', (e) => {
             if (!masterHeader.contains(e.target)) {
-                if (searchCoreInput.value.trim() === "") {
+                if (masterHeader.classList.contains('state-search') && searchCoreInput.value.trim() === "") {
                     handleHeaderLeaveOrBlur(false);
                 } else {
                     searchCoreInput.blur();
@@ -804,17 +818,21 @@
                 if (!destination || destination === '#' || destination.startsWith('#')) return;
 
                 e.preventDefault();
+                // Clear active states across all panels and links
                 document.querySelectorAll('.capsule-panel').forEach(p => p.classList.remove('is-panel-lifted'));
                 universalTargetLinks.forEach(l => l.classList.remove('is-wave-loading'));
 
+                // Lift parent capsule panel if clicked link is inside one
                 const parentPanel = this.closest('.capsule-panel');
                 if (parentPanel) {
                     parentPanel.classList.add('is-panel-lifted');
                 }
 
+                // Trigger wave shimmer animation
                 this.classList.add('is-wave-loading');
                 sessionStorage.setItem('activeUniversalTargetUrl', this.href);
 
+                // Hold for 750ms so wave sweep completes smoothly
                 setTimeout(() => {
                     window.location.href = destination;
                 }, 750);
@@ -827,7 +845,7 @@
             }
 
             requestAnimationFrame(() => {
-                document.body.offsetHeight;
+                document.body.offsetHeight; // Force layout paint frame
                 requestAnimationFrame(() => {
                     document.querySelectorAll('.capsule-panel').forEach(p => p.classList.remove('is-panel-lifted'));
                     masterHeader.classList.remove('is-header-lifted');
